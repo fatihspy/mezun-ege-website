@@ -4,6 +4,30 @@ const mongoose   = require('mongoose');
 const cors       = require('cors');
 const helmet     = require('helmet');
 const path       = require('path');
+const logger     = require('./utils/logger');
+
+// ── Environment Validation ─────────────────────────────
+const requiredEnvVars = [
+  'MONGODB_URI',
+  'JWT_SECRET',
+  'MAIL_HOST',
+  'MAIL_PORT',
+  'MAIL_USER',
+  'MAIL_PASS'
+];
+
+const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingVars.length > 0) {
+  console.error(`❌ Eksik environment variables: ${missingVars.join(', ')}`);
+  console.error('Lütfen .env dosyasını doldur ve tekrar başlat.');
+  process.exit(1);
+}
+
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error('❌ JWT_SECRET çok kısa! En az 32 karakter olmalı.');
+  console.error('Oluştur: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+  process.exit(1);
+}
 
 const app = express();
 
@@ -64,10 +88,13 @@ app.use((req, res) => {
 
 // ── Global hata yönetimi ──────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(`[${new Date().toISOString()}] HATA:`, err.message);
-  if (process.env.NODE_ENV !== 'production') {
-    console.error(err.stack);
-  }
+  logger.error(`[${new Date().toISOString()}] HATA:`, {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method
+  });
+  
   // Production'da iç hata detaylarını kullanıcıya gösterme
   const mesaj = process.env.NODE_ENV === 'production'
     ? 'Bir hata oluştu. Lütfen daha sonra tekrar deneyin.'
@@ -76,15 +103,21 @@ app.use((err, req, res, next) => {
 });
 
 // ── MongoDB + Sunucu başlat ───────────────────────────
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+  maxPoolSize: process.env.NODE_ENV === 'production' ? 20 : 10,
+  minPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5,
+  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 5000,
+})
   .then(() => {
+    logger.info(`📦 MongoDB bağlantısı başarılı`);
+    logger.info(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
+    
     app.listen(process.env.PORT || 3000, () => {
-      console.log(`🚀 Sunucu çalışıyor: http://localhost:${process.env.PORT || 3000}`);
-      console.log(`📦 MongoDB bağlantısı başarılı`);
-      console.log(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`🚀 Sunucu çalışıyor: http://localhost:${process.env.PORT || 3000}`);
     });
   })
   .catch(err => {
-    console.error('❌ MongoDB bağlantı hatası:', err.message);
+    logger.error('❌ MongoDB bağlantı hatası:', err.message);
     process.exit(1);
   });

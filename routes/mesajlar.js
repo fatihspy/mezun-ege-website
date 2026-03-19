@@ -1,11 +1,19 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const Mesaj = require('../models/Mesaj');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
 
+// Rate limiters
+const mesajLimiter = rateLimit({
+  windowMs: 60 * 1000,        // 1 dakika
+  max: 30,                    // 30 mesaj/dakika
+  message: { basarili: false, mesaj: 'Çok fazla mesaj gönderdiniz. Lütfen bir tur sonra tekrar deneyin.' }
+});
+
 // GET /api/mesajlar/konusmalar — Kullanıcının tüm konuşmalarını gruplayarak getir
-router.get('/konusmalar', authMiddleware, async (req, res, next) => {
+router.get('/konusmalar', mesajLimiter, authMiddleware, async (req, res, next) => {
     try {
         const userId = req.kullanici._id;
         // Kullanıcının gönderdiği veya aldığı tüm mesajları bul
@@ -59,7 +67,7 @@ router.get('/ara', authMiddleware, async (req, res, next) => {
 });
 
 // POST /api/mesajlar/:aliciId — Karşı tarafa mesaj gönder
-router.post('/:aliciId', authMiddleware, async (req, res, next) => {
+router.post('/:aliciId', mesajLimiter, authMiddleware, async (req, res, next) => {
     try {
         const alici = await User.findById(req.params.aliciId);
         if (!alici) return res.status(404).json({ basarili: false, mesaj: 'Kişi bulunamadı.' });

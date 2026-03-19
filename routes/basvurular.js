@@ -1,12 +1,20 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const validator = require('../utils/validator');
 const Basvuru = require('../models/Basvuru');
 const Ilan = require('../models/Ilan');
 const authMiddleware = require('../middleware/auth');
 
+// Rate limiters
+const basvuruLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,   // 1 saat
+  max: 20,                    // günde 20 başvuru
+  message: { basarili: false, mesaj: 'Çok fazla başvuru yaptınız. 1 saat sonra tekrar deneyin.' }
+});
+
 // POST /api/basvurular/:ilanId — İlana başvur
-router.post('/:ilanId', authMiddleware, async (req, res, next) => {
+router.post('/:ilanId', basvuruLimiter, authMiddleware, async (req, res, next) => {
     try {
         if (req.kullanici.rol.includes('isveren')) return res.status(403).json({ basarili: false, mesaj: 'İşverenler ilana başvuramaz.' });
         const ilan = await Ilan.findById(req.params.ilanId);
