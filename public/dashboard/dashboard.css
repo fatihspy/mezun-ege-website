@@ -1,0 +1,704 @@
+/* ── Navbar Standart ─────────────────────────────────── */
+.main-header {
+    background: white;
+    border-bottom: 1px solid #e1e5e9;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.header-content {
+    width: 100%; padding: 0 24px; height: 60px;
+    display: flex; align-items: center; gap: 0;
+}
+.logo { flex-shrink: 0; margin-right: 20px; }
+.logo h2 {
+    font-size: 18px; font-weight: 700; color: #0077b5;
+    white-space: nowrap; margin: 0;
+}
+.main-nav { flex: 1; min-width: 0; }
+.main-nav ul {
+    display: flex; list-style: none;
+    gap: 0; align-items: center; margin: 0; padding: 0;
+    flex-wrap: nowrap;
+}
+.main-nav a {
+    display: block; color: #555; text-decoration: none;
+    font-weight: 500; font-size: 13px;
+    padding: 7px 9px; border-radius: 6px;
+    white-space: nowrap; transition: all 0.2s;
+}
+.main-nav a:hover { color: #0077b5; background: #f0f7fc; }
+.main-nav a.active { color: #0077b5; background: #e8f4fd; font-weight: 600; }
+.main-nav .logout-btn {
+    background: #e53e3e; color: white; border: none;
+    padding: 7px 13px; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: background 0.2s;
+    font-family: inherit;
+}
+.main-nav .logout-btn:hover { background: #c53030; }
+.user-menu {
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0; margin-left: 8px;
+}
+.user-avatar-wrap, .nav-avatar-wrap {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #0077b5, #00a0dc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+    border: 2px solid #0077b5; overflow: hidden; flex-shrink: 0;
+    cursor: pointer;
+}
+.user-avatar-wrap img, .nav-avatar-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.user-name {
+    font-weight: 600; color: #333; font-size: 13px;
+    white-space: nowrap;
+}
+.hamburger {
+    display: none; background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #555; padding: 4px;
+    flex-shrink: 0;
+}
+.mobil-menu {
+    display: none; flex-direction: column;
+    background: white; border-bottom: 1px solid #e1e5e9;
+    padding: 8px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: sticky; top: 60px; z-index: 99;
+}
+.mobil-menu.acik { display: flex; }
+.mobil-menu a {
+    padding: 12px 24px; color: #555; text-decoration: none;
+    font-size: 14px; font-weight: 500; transition: background 0.2s;
+}
+.mobil-menu a:hover { background: #f3f2ef; color: #0077b5; }
+@media (max-width: 960px) {
+    .main-nav { display: none; }
+    .hamburger { display: block; }
+    .user-name { display: none; }
+}
+
+}
+@media (max-width: 480px) {
+    
+}
+
+/* Dashboard CSS */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    background-color: #f3f2ef;
+    color: #333;
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+}
+
+/* Ana Header */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #0077b5;
+}
+
+
+
+
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dashboard-content {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-right: 1px solid #e9ecef;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin: 15px 0;
+}
+
+.sidebar nav ul li a {
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.sidebar nav ul li a:hover {
+    background: #293b80;
+    color: #fff;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.cards {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h3 {
+    margin: 0 0 10px 0;
+    color: #293b80;
+}
+
+.card p {
+    font-size: 24px;
+    margin: 0;
+    font-weight: bold;
+}
+
+.chart-placeholder {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.top-left-image {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 80px;
+    height: auto;
+    z-index: 10;
+}
+
+.top-left-image:nth-child(2) {
+    left: 100px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    
+
+    
+
+    
+
+    .dashboard-content {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .main-content {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+.top-left-image:nth-child(2) {
+    left: 100px;
+}
+
+/* Mobil Uyumluluk */
+@media (max-width: 768px) {
+    .dashboard-container {
+        width: 95%;
+        min-height: 500px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .dashboard-content {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .sidebar nav ul {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
+
+    .sidebar nav ul li {
+        margin: 5px;
+    }
+
+    .cards {
+        flex-direction: column;
+    }
+
+    .card {
+        margin-bottom: 15px;
+    }
+
+    .top-left-image {
+        width: 60px;
+    }
+
+    .top-left-image:nth-child(2) {
+        left: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        width: 98%;
+        margin: 10px auto;
+    }
+
+    .dashboard-header h1 {
+        font-size: 20px;
+    }
+
+    .user-info span {
+        font-size: 12px;
+    }
+
+    
+
+    .sidebar nav ul li a {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .card h3 {
+        font-size: 16px;
+    }
+
+    .card p {
+        font-size: 20px;
+    }
+
+    .top-left-image {
+        width: 50px;
+        top: 5px;
+        left: 5px;
+    }
+
+    .top-left-image:nth-child(2) {
+        left: 60px;
+    }
+}
+
+/* Modal Styles */
+/* Modern Logout Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 420px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal.show .modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.modal-icon {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal-icon .icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(238, 90, 82, 0.3);
+}
+
+.modal h3 {
+    margin-bottom: 12px;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+    color: #2d3748;
+}
+
+.modal p {
+    font-size: 16px;
+    color: #718096;
+    text-align: center;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-btn.confirm {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(238, 90, 82, 0.3);
+}
+
+.modal-btn.confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(238, 90, 82, 0.4);
+}
+
+.modal-btn.cancel {
+    background: #e2e8f0;
+    color: #4a5568;
+    border: 2px solid #cbd5e0;
+}
+
+.modal-btn.cancel:hover {
+    background: #cbd5e0;
+    transform: translateY(-2px);
+}
+
+/* Success Modal */
+.success-modal .modal-content {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+    border: 1px solid #9ae6b4;
+}
+
+.success-modal .icon {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3) !important;
+}
+
+.success-modal h3 {
+    color: #2f855a;
+}
+
+.success-modal .modal-buttons {
+    justify-content: center;
+}
+
+.success-modal .modal-btn {
+    flex: none;
+    min-width: 120px;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.success-modal .modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+/* Logout Button Style */
+
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(238, 90, 82, 0.3);
+}
+
+/* Animasyonlar */
+@keyframes modalSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modalSlideOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+}
+/* ── Yeni Dashboard Bileşenleri ────────────── */
+
+
+
+
+
+
+
+
+
+/* Hoş Geldin Banner */
+.hosgeldin-banner {
+    background: linear-gradient(135deg, #0077b5 0%, #005f8e 100%);
+    border-radius: 16px; padding: 28px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; color: white;
+    box-shadow: 0 8px 24px rgba(0,119,181,0.3);
+}
+.hosgeldin-sol h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.hosgeldin-sol p  { font-size: 14px; opacity: 0.85; }
+.btn-kesfet {
+    background: rgba(255,255,255,0.2); color: white;
+    border: 2px solid rgba(255,255,255,0.5); padding: 10px 20px;
+    border-radius: 10px; text-decoration: none; font-size: 13px;
+    font-weight: 600; transition: all 0.2s; white-space: nowrap;
+}
+.btn-kesfet:hover { background: rgba(255,255,255,0.35); }
+
+/* Özet Kartları */
+.cards {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 16px; margin-bottom: 24px;
+}
+.card {
+    background: white; border: 1px solid #e1e5e9;
+    border-radius: 14px; padding: 20px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.25s; cursor: default;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.card-ikon {
+    width: 52px; height: 52px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+}
+.card-bilgi h3 { font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-bilgi p  { font-size: 26px; font-weight: 700; color: #1a202c; }
+
+/* İki Kolon Layout */
+.iki-kolon { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+.sag-kolon { display: flex; flex-direction: column; gap: 20px; }
+
+/* Panel */
+.panel {
+    background: white; border: 1px solid #e1e5e9;
+    border-radius: 16px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.panel-baslik-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.panel-baslik-row h2 { font-size: 15px; font-weight: 700; color: #1a202c; }
+.tumunu-goster { font-size: 13px; color: #0077b5; text-decoration: none; font-weight: 600; }
+.tumunu-goster:hover { text-decoration: underline; }
+
+/* Mini Kartlar */
+.mini-kart {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid #f8f8f8;
+    cursor: pointer; transition: background 0.15s; border-radius: 8px;
+}
+.mini-kart:last-child { border-bottom: none; }
+.mini-kart:hover { background: #f8f9fa; padding-left: 8px; }
+
+.mini-kart-ikon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg,#0077b5,#00a0dc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.mesaj-ikon   { background: linear-gradient(135deg,#d97706,#f6ad55); }
+.basvuru-ikon { background: linear-gradient(135deg,#38a169,#48bb78); }
+
+.mini-kart-bilgi { flex: 1; min-width: 0; }
+.mini-kart-baslik { font-size: 14px; font-weight: 600; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-kart-alt    { font-size: 12px; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mini-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+}
+.tur-tam     { background:#e8f4fd; color:#0077b5; }
+.tur-yari    { background:#fef3c7; color:#d97706; }
+.tur-staj    { background:#d1fae5; color:#059669; }
+.tur-uzaktan { background:#ede9fe; color:#7c3aed; }
+
+.durum-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; flex-shrink: 0;
+}
+.durum-beklemede  { background:#fef3c7; color:#d97706; }
+.durum-gorusme    { background:#e8f4fd; color:#0077b5; }
+.durum-reddedildi { background:#fff5f5; color:#e53e3e; }
+.durum-kabul      { background:#d1fae5; color:#059669; }
+
+.okunmadi-dot {
+    background: #0077b5; color: white;
+    font-size: 11px; font-weight: 700;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.bos-panel { font-size: 13px; color: #a0aec0; padding: 16px 0; text-align: center; }
+.bos-panel a { color: #0077b5; text-decoration: none; font-weight: 600; }
+
+.yukluyor { font-size: 13px; color: #a0aec0; padding: 16px 0; text-align: center; }
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 1024px) {
+    .cards { grid-template-columns: repeat(2,1fr); }
+    .iki-kolon { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .sidebar { display: none; }
+    
+    
+    .hosgeldin-banner { flex-direction: column; gap: 16px; text-align: center; }
+    .cards { grid-template-columns: repeat(2,1fr); }
+    .main-content { padding: 16px; }
+}
+
+@media (max-width: 480px) {
+    .cards { grid-template-columns: 1fr; }
+    
+    
+}
+
+/* ── Onboarding ──────────────────────── */
+.onboarding-kart {
+    background:linear-gradient(135deg,#0f2942,#0077b5);
+    border-radius:16px; padding:20px 24px; color:white;
+}
+.onboarding-baslik {
+    display:flex; justify-content:space-between;
+    font-size:15px; font-weight:700; margin-bottom:10px;
+}
+.onboarding-yuzde { opacity:0.8; font-size:13px; }
+.onboarding-bar {
+    height:6px; background:rgba(255,255,255,0.2);
+    border-radius:6px; margin-bottom:16px; overflow:hidden;
+}
+.onboarding-bar-dolu {
+    height:100%; background:white; border-radius:6px;
+    transition:width 0.5s ease;
+}
+.onboarding-adimlar { display:flex; flex-direction:column; gap:8px; }
+.onboarding-adim {
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.1); border-radius:10px;
+    padding:10px 14px; text-decoration:none; color:white;
+    font-size:13px; font-weight:600; transition:background 0.2s;
+}
+.onboarding-adim:hover { background:rgba(255,255,255,0.2); }
+.adim-ikon { font-size:16px; }
+.adim-ok   { margin-left:auto; opacity:0.7; }

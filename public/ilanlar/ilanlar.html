@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="ilanlar.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>İlanlar - Egemyo Mezun</title>
+
+<style>
+.bildirim-zil-wrap {
+    position:relative; cursor:pointer; font-size:20px;
+    padding:4px 8px; border-radius:8px; transition:background 0.2s;
+}
+.bildirim-zil-wrap:hover { background:#f0f4f8; }
+.zil-badge {
+    position:absolute; top:-2px; right:-2px;
+    background:#e53e3e; color:white; border-radius:10px;
+    font-size:10px; font-weight:700; min-width:16px; height:16px;
+    align-items:center; justify-content:center; padding:0 3px;
+}
+.bildirim-panel {
+    display:none; position:absolute; top:calc(100% + 8px); right:0;
+    width:300px; background:white; border:1px solid #e1e5e9;
+    border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    z-index:1000; max-height:360px; overflow-y:auto;
+    animation:fadeIn 0.2s ease;
+}
+.bildirim-panel.show { display:block; }
+.bildirim-item {
+    padding:12px 16px; border-bottom:1px solid #f0f0f0;
+    cursor:pointer; display:flex; gap:10px; align-items:flex-start;
+    transition:background 0.15s;
+}
+.bildirim-item:hover { background:#f8f9fa; }
+.bildirim-item.okunmamis { background:#e8f4fd; }
+.bildirim-tip-ikon { font-size:18px; flex-shrink:0; }
+.bildirim-mesaj { font-size:13px; color:#1a202c; font-weight:500; margin-bottom:3px; }
+.bildirim-tarih { font-size:11px; color:#a0aec0; }
+.bildirim-bos { padding:24px; text-align:center; color:#a0aec0; font-size:13px; }
+</style>
+<style>
+.bildirim-zil-wrap{position:relative;cursor:pointer;font-size:20px;padding:4px 8px;border-radius:8px;transition:background 0.2s;}
+.bildirim-zil-wrap:hover{background:#f0f4f8;}
+.zil-badge{position:absolute;top:-2px;right:-2px;background:#e53e3e;color:white;border-radius:10px;font-size:10px;font-weight:700;min-width:16px;height:16px;display:none;align-items:center;justify-content:center;padding:0 3px;}
+.bildirim-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:white;border:1px solid #e1e5e9;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000;max-height:360px;overflow-y:auto;}
+.bildirim-panel.show{display:block;}
+.bildirim-item{padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:background 0.15s;}
+.bildirim-item:hover{background:#f8f9fa;}
+.bildirim-item.okunmamis{background:#e8f4fd;}
+.bildirim-tip-ikon{font-size:18px;flex-shrink:0;}
+.bildirim-mesaj{font-size:13px;color:#1a202c;font-weight:500;margin-bottom:3px;}
+.bildirim-tarih{font-size:11px;color:#a0aec0;}
+.bildirim-bos{padding:24px;text-align:center;color:#a0aec0;font-size:13px;}
+</style>
+</head>
+<body>
+    
+    <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h2>Egemyo Mezun</h2>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="../dashboard/dashboard.html">Ana Sayfa</a></li>
+                        <li><a href="../profile/profile.html">Profil</a></li>
+                        <li><a href="../ilanlar/ilanlar.html" class="active">İlanlar</a></li>
+                        <li><a href="../mezunlar/mezunlar.html">Mezunlar</a></li>
+                        <li><a href="../mesajlar/mesajlar.html">Mesajlar</a></li>
+                        <li><a href="../basvurular/basvurular.html">Başvurularım</a></li>
+                        <li><a href="../ayarlar/ayarlar.html">Ayarlar</a></li>
+                        <li><button class="logout-btn">Çıkış</button></li>
+                    </ul>
+                </nav>
+                <div class="user-menu">
+                    <div class="bildirim-zil-wrap" id="bildirimZili" onclick="bildirimPanelAc()">
+                        🔔<span class="zil-badge" style="display:none;">0</span>
+                        <div class="bildirim-panel" id="bildirimPanel"></div>
+                    </div>
+                    <div class="user-avatar-wrap" id="navAvatarWrap"></div>
+                    <span class="user-name" id="navUserName">Kullanıcı</span>
+                    <button class="hamburger" id="hamburger">☰</button>
+                </div>
+            </div>
+        </header>
+    <div class="mobil-menu" id="mobilMenu">
+            <a href="../dashboard/dashboard.html">🏠 Ana Sayfa</a>
+            <a href="../profile/profile.html">👤 Profil</a>
+            <a href="../ilanlar/ilanlar.html">📋 İlanlar</a>
+            <a href="../mezunlar/mezunlar.html">👥 Mezunlar</a>
+            <a href="../mesajlar/mesajlar.html">💬 Mesajlar</a>
+            <a href="../basvurular/basvurular.html">📄 Başvurularım</a>
+            <a href="../ayarlar/ayarlar.html">⚙️ Ayarlar</a>
+            <button onclick="document.querySelector('.logout-btn').click()" style="width:100%; padding:12px 24px; text-align:left; background:none; border:none; color:#e53e3e; text-decoration:none; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; display:block;">🚪 Çıkış</button>
+        </div>
+    <div class="dashboard-container">
+        <div class="dashboard-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="../dashboard/dashboard.html">🏠 Ana Sayfa</a></li>
+                        <li><a href="../profile/profile.html">👤 Profil</a></li>
+                        <li><a href="ilanlar.html" class="active">📋 İlanlar</a></li>
+                        <li><a href="../mezunlar/mezunlar.html">Mezunlar</a></li>
+                        <li><a href="../mesajlar/mesajlar.html">💬 Mesajlar</a></li>
+                        <li><a href="../basvurular/basvurular.html">📄 Başvurularım</a></li>
+                        <li><a href="../ayarlar/ayarlar.html">⚙️ Ayarlar</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Ana İçerik -->
+            <main class="main-content">
+                <!-- Başlık ve Filtreler -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>İş İlanları</h1>
+                        <p>Mezunlara özel iş fırsatlarını keşfedin</p>
+                    </div>
+                    <button class="btn-primary" id="ilanEkleBtn">+ İlan Ekle</button>
+                </div>
+
+                <!-- Arama ve Filtre -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="aramaInput" placeholder="İlan ara... (pozisyon, şirket, konum)">
+                    </div>
+                    <div class="filter-group">
+                        <select id="kategoriFiltre">
+                            <option value="">Tüm Kategoriler</option>
+                            <option value="yazilim">Yazılım</option>
+                            <option value="tasarim">Tasarım</option>
+                            <option value="pazarlama">Pazarlama</option>
+                            <option value="finans">Finans</option>
+                            <option value="muhendislik">Mühendislik</option>
+                            <option value="diger">Diğer</option>
+                        </select>
+                        <select id="turFiltre">
+                            <option value="">Tüm Türler</option>
+                            <option value="tam">Tam Zamanlı</option>
+                            <option value="yari">Yarı Zamanlı</option>
+                            <option value="staj">Staj</option>
+                            <option value="uzaktan">Uzaktan</option>
+                        </select>
+                        <select id="siralaFiltre">
+                            <option value="yeni">En Yeni</option>
+                            <option value="eski">En Eski</option>
+                        </select>
+                        <input type="number" id="minMaasFiltre" placeholder="Min Maaş" style="width: 120px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                        <input type="number" id="maxMaasFiltre" placeholder="Max Maaş" style="width: 120px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                    </div>
+                </div>
+
+                <!-- İlan Listesi -->
+                <div class="ilan-grid" id="ilanGrid">
+                    <!-- İlanlar JS ile yüklenir -->
+                </div>
+
+                <!-- Boş durum -->
+                <div class="bos-durum" id="bosDurum" style="display:none;">
+                    <div class="bos-icon">📭</div>
+                    <h3>Hiç ilan bulunamadı</h3>
+                    <p>Arama kriterlerinizi değiştirmeyi deneyin.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- İlan Ekle Modal -->
+    <div id="ilan-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>📋 Yeni İlan Ekle</h3>
+                <button class="modal-kapat" id="modalKapat">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pozisyon Adı *</label>
+                        <input type="text" id="pozisyon" placeholder="Örn: Frontend Developer">
+                    </div>
+                    <div class="form-group">
+                        <label>Şirket Adı *</label>
+                        <input type="text" id="sirket" placeholder="Örn: Tech A.Ş.">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Konum</label>
+                        <input type="text" id="konum" placeholder="Örn: İzmir / Uzaktan">
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="kategori">
+                            <option value="yazilim">Yazılım</option>
+                            <option value="tasarim">Tasarım</option>
+                            <option value="pazarlama">Pazarlama</option>
+                            <option value="finans">Finans</option>
+                            <option value="muhendislik">Mühendislik</option>
+                            <option value="diger">Diğer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>İş Türü</label>
+                        <select id="isTuru">
+                            <option value="tam">Tam Zamanlı</option>
+                            <option value="yari">Yarı Zamanlı</option>
+                            <option value="staj">Staj</option>
+                            <option value="uzaktan">Uzaktan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Maaş Aralığı</label>
+                        <input type="text" id="maas" placeholder="Örn: 20.000 - 30.000 ₺">
+                    </div>
+                </div>
+                <div class="form-group full">
+                    <label>İlan Açıklaması *</label>
+                    <textarea id="aciklama" rows="4" placeholder="Pozisyon hakkında detaylı bilgi verin..."></textarea>
+                </div>
+                <div class="form-group full">
+                    <label>Aranan Nitelikler</label>
+                    <textarea id="nitelikler" rows="3" placeholder="Gerekli beceri ve deneyimler..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="ilanIptal">İptal</button>
+                <button class="modal-btn confirm" id="ilanKaydet">İlanı Yayınla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- İlan Detay Modal -->
+    <div id="detay-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="detayPozisyon">Pozisyon</h3>
+                <button class="modal-kapat" id="detayKapat">&times;</button>
+            </div>
+            <div class="modal-body" id="detayBody">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="detayKapatBtn">Kapat</button>
+                <button class="modal-btn confirm" id="basVurBtn">✉️ Başvur</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Başvuru & CV Modal -->
+    <div id="basvuru-modal" class="modal">
+        <div class="modal-content" style="max-width:460px;">
+            <div class="modal-header">
+                <h3>✉️ Başvuruyu Tamamla</h3>
+                <button class="modal-kapat" id="basvuruModalKapat">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- CV Yükleme -->
+                <div id="cvYukleAlan">
+                    <p style="font-size:13px;color:#4a5568;margin-bottom:16px;">
+                        CV ekleyerek başvurunuzu güçlendirin. (İsteğe bağlı)
+                    </p>
+                    <div class="cv-yukle-kutu" id="cvYukleKutu">
+                        <div class="cv-ikon">📄</div>
+                        <div id="cvDurum">
+                            <p class="cv-baslik">CV Yükle (PDF)</p>
+                            <p class="cv-aciklama">Tıkla veya sürükle bırak</p>
+                        </div>
+                        <input type="file" id="cvDosya" accept=".pdf" style="display:none;">
+                    </div>
+                    <div id="cvYuklendi" class="cv-yuklendi" style="display:none;">
+                        <span class="cv-dosya-adi" id="cvDosyaAdi">📄 dosya.pdf</span>
+                        <button class="cv-sil-btn" id="cvSilBtn">✕</button>
+                    </div>
+                </div>
+
+                <!-- Ek Not -->
+                <div style="margin-top:16px;">
+                    <label style="font-size:13px;font-weight:600;color:#4a5568;display:block;margin-bottom:6px;">
+                        Ek Not (İsteğe bağlı)
+                    </label>
+                    <textarea id="basvuruNot" rows="3" placeholder="Kendinizi kısaca tanıtın..."
+                        style="width:100%;border:1px solid #e1e5e9;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:none;outline:none;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="basvuruIptalBtn">İptal</button>
+                <button class="modal-btn confirm" id="basvuruTamam">✅ Başvuruyu Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Başvuru Başarı Modal -->
+    <div id="basvuru-basari-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <div class="icon" style="background:linear-gradient(135deg,#48bb78,#38a169);box-shadow:0 8px 25px rgba(56,161,105,0.3);">✅</div>
+            </div>
+            <h3>Başvurunuz Alındı!</h3>
+            <p>Şirket sizinle en kısa sürede iletişime geçecektir.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" id="basvuruBasariTamam">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <div class="icon">🚪</div>
+            </div>
+            <h3>Çıkış Yap</h3>
+            <p>Çıkış yapmak istediğinizden emin misiniz?</p>
+            <div class="modal-buttons">
+                <button id="confirm-logout" class="modal-btn confirm">Evet</button>
+                <button id="cancel-logout" class="modal-btn cancel">Hayır</button>
+            </div>
+        </div>
+    </div>
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <div class="icon" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); box-shadow: 0 8px 25px rgba(56,161,105,0.3);">✅</div>
+            </div>
+            <h3>Çıkış Başarılı</h3>
+            <p>Giriş ekranına yönlendiriliyorsunuz...</p>
+            <div class="modal-buttons">
+                <button id="ok-success" class="modal-btn confirm">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-bildirim" id="toastBildirim"></div>
+    <script src="../config.js"></script>
+    <script src="ilanlar.js"></script>
+</body>
+</html>

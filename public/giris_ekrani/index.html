@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <title>Giriş - Egemyo Mezun</title>
+    <script src="../validasyon.js"></script>
+    <script src="../config.js"></script>
+</head>
+<body>
+    <div class="giris-wrap">
+
+        <div class="sol-panel">
+            <div class="sol-icerik">
+                <div class="logo-alan">
+                    <div class="logo-daire">E</div>
+                    <h1>Egemyo Mezun</h1>
+                </div>
+                <p class="sol-slogan">Mezunları, öğrencileri ve işverenleri bir araya getiren platform.</p>
+                <div class="ozellik-liste">
+                    <div class="ozellik">✅ Okul mailinizle güvenli giriş</div>
+                    <div class="ozellik">📋 İş ilanlarını keşfet ve başvur</div>
+                    <div class="ozellik">💬 Mezunlarla iletişime geç</div>
+                    <div class="ozellik">🎓 Egemyo topluluğunun parçası ol</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sag-panel">
+            <div class="giris-kart">
+
+                <div class="sekme-secici">
+                    <button class="sekme aktif" id="sekme-giris" onclick="formTuruGec('giris')">
+                        🔓 Giriş Yap
+                    </button>
+                    <button class="sekme" id="sekme-kayit" onclick="formTuruGec('kayit')">
+                        📝 Kayıt Ol
+                    </button>
+                </div>
+
+                <!-- ROLES seçimi sadece kayıt formunda gösterilecek -->
+                <div class="rol-secici" id="rolSeciciKayit" style="display:none;">
+                    <button class="rol-btn aktif" id="rol-mezun-kayit" onclick="rolSecKayit('mezun')">🎓 Mezun</button>
+                    <button class="rol-btn" id="rol-isveren-kayit" onclick="rolSecKayit('isveren')">🏢 İşveren</button>
+                </div>
+
+                <!-- KAYIT formu (başında gizli) -->
+                <div id="kayitFormu" class="form-container" style="display:none;">
+                    <div id="adim-kayit-email" class="giris-adim aktif">
+                        <div class="giris-baslik">
+                            <h2>Hesap Oluştur</h2>
+                            <p>E-posta ve şifre ile yeni hesap aç</p>
+                        </div>
+
+                        <div class="form-alan">
+                            <label id="kayitMailLabel">E-posta Adresi</label>
+                            <div class="input-wrap">
+                                <span class="input-ikon">📧</span>
+                                <input type="email" id="kayitMailInput"
+                                    placeholder="E-posta adresiniz"
+                                    autocomplete="email">
+                            </div>
+                            <span class="mail-ipucu" id="kayitMailIpucu" style="font-size: 0.85em;">
+                                Mezun/Öğrenci için @ogrenci.ege.edu.tr, İşveren için size uygun herhangi bir mail
+                            </span>
+                        </div>
+
+                        <div class="form-alan">
+                            <label>Şifre</label>
+                            <div class="input-wrap">
+                                <span class="input-ikon">🔒</span>
+                                <input type="password" id="kayitSifreInput" 
+                                    placeholder="Min. 8 karakter, 1 büyük harf, 1 rakam"
+                                    autocomplete="new-password">
+                                <button type="button" class="toggle-sifre" onclick="kayitSifreyiToggleEt('kayitSifreInput')">👁️</button>
+                            </div>
+                        </div>
+
+                        <div class="form-alan">
+                            <label>Şifre (Tekrar)</label>
+                            <div class="input-wrap">
+                                <span class="input-ikon">🔒</span>
+                                <input type="password" id="kayitSifreTekrarInput" 
+                                    placeholder="Şifrenizi tekrar girin"
+                                    autocomplete="new-password">
+                                <button type="button" class="toggle-sifre" onclick="kayitSifreyiToggleEt('kayitSifreTekrarInput')">👁️</button>
+                            </div>
+                            <div class="sifre-guclu">
+                                <span id="kayitSifreGucluBilgi" style="font-size: 0.85em; color: #999;">
+                                    Min. 8 karakter, 1 büyük harf, 1 rakam
+                                </span>
+                            </div>
+                        </div>
+
+                        <button class="btn-giris" id="kayitBtn">
+                            <span id="kayitBtnYazi">Hesap Oluştur →</span>
+                        </button>
+
+                        <div class="hata-kutu" id="kayitHata" style="display:none;"></div>
+
+                        <div class="form-footer">
+                            <span>Zaten hesabın var mı? <button class="link-btn" onclick="formTuruGec('giris')">Giriş yap</button></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GIRIS formu -->
+                <div id="girisFormu" class="form-container aktif">
+
+                <!-- GIRIS formunun adımları -->
+                <div id="adim-mail" class="giris-adim aktif">
+                    <div class="giris-baslik">
+                        <h2 id="girisBaslik">Hoş Geldin!</h2>
+                        <p id="girisSloganı">Okul mailinizle güvenli giriş yapın</p>
+                    </div>
+
+                    <div class="form-alan">
+                        <label id="mailLabel">Okul E-posta Adresi</label>
+                        <div class="input-wrap">
+                            <span class="input-ikon">📧</span>
+                            <input type="email" id="mailInput"
+                                placeholder="ad.soyad@ogrenci.ege.edu.tr"
+                                autocomplete="email">
+                        </div>
+                        <span class="mail-ipucu" id="mailIpucu">
+                            @ogrenci.ege.edu.tr uzantılı okul mailinizi girin
+                        </span>
+                    </div>
+
+                    <button class="btn-giris" id="kodGonderBtn">
+                        <span id="kodGonderBtnYazi">Devam Et →</span>
+                    </button>
+
+                    <div class="hata-kutu" id="mailHata" style="display:none;"></div>
+                </div>
+
+                <div id="adim-kod" class="giris-adim">
+                    <div class="giris-baslik">
+                        <h2>Şifrenizi Girin</h2>
+                        <p id="kodAciklama">Hesabınıza giriş yapmak için şifrenizi girin</p>
+                    </div>
+
+                    <div class="mail-ozet" id="mailOzet"></div>
+
+                    <div class="form-alan">
+                        <label>Şifre</label>
+                        <div class="input-wrap">
+                            <span class="input-ikon">🔒</span>
+                            <input type="password" id="sifreInput" 
+                                placeholder="Şifrenizi girin"
+                                autocomplete="current-password">
+                            <button type="button" class="toggle-sifre" onclick="sifreyiToggleEt()">👁️</button>
+                        </div>
+                        <div class="sifre-guclu">
+                            <span id="sifreGucluBilgi" style="font-size: 0.85em; color: #999;">
+                                Min. 8 karakter, 1 büyük harf, 1 rakam
+                            </span>
+                        </div>
+                    </div>
+
+                    <button class="btn-giris" id="dogrulaBtn">
+                        <span id="dogrulaBtnYazi">Giriş Yap →</span>
+                    </button>
+
+                    <label class="hatirla-wrap">
+                        <input type="checkbox" id="beniHatirla" checked>
+                        <span class="hatirla-metin">
+                            <span class="hatirla-baslik">Beni Hatırla</span>
+                            <span class="hatirla-aciklama">Bu cihazda oturumumu açık tut</span>
+                        </span>
+                    </label>
+
+                    <div class="hata-kutu" id="kodHata" style="display:none;"></div>
+
+                    <div class="tekrar-gonder">
+                        <button class="link-btn" onclick="sifremiUnuttumAc()">🔐 Şifremi Unuttum?</button>
+                        <span style="color:#ccc;margin:0 8px;">•</span>
+                        <button class="link-btn" onclick="geriDon()">← Farklı mail kullan</button>
+                    </div>
+                </div>
+
+                <div id="adim-sifre-kod" class="giris-adim">
+                    <div class="giris-baslik">
+                        <h2>Şifre Belirleme Kodu</h2>
+                        <p>E-postanıza gönderilen 6 haneli kodu girin</p>
+                    </div>
+
+                    <div class="mail-ozet" id="mailOzet3"></div>
+
+                    <div class="form-alan">
+                        <label>Doğrulama Kodu</label>
+                        <div class="input-wrap">
+                            <span class="input-ikon">🔑</span>
+                            <input type="text" id="sifreKoduInput" 
+                                placeholder="6 haneli kodu girin"
+                                inputmode="numeric"
+                                maxlength="6">
+                        </div>
+                    </div>
+
+                    <button class="btn-giris" id="sifreKoduDogrulaBtn">
+                        <span id="sifreKoduDogrulaBtnYazi">Kodu Doğrula →</span>
+                    </button>
+
+                    <div class="hata-kutu" id="sifreKoduHata" style="display:none;"></div>
+
+                    <div class="tekrar-gonder">
+                        <button class="link-btn" id="yeniSifreKoduBtn" style="display:none;" onclick="yeniSifreKoduIste()">
+                            Yeni kod gönder
+                        </button>
+                        <button class="link-btn" onclick="geriDon()">← Geriş dön</button>
+                    </div>
+                </div>
+
+                <div id="adim-sifre-belirle" class="giris-adim">
+                    <div class="giris-baslik">
+                        <h2>Şifrenizi Belirleyin</h2>
+                        <p>Bu hesap için güvenli bir şifre ayarlayın</p>
+                    </div>
+
+                    <div class="mail-ozet" id="mailOzet2"></div>
+
+                    <div class="form-alan">
+                        <label>Yeni Şifre</label>
+                        <div class="input-wrap">
+                            <span class="input-ikon">🔒</span>
+                            <input type="password" id="yeniSifreInput" 
+                                placeholder="Min. 8 karakter, 1 büyük harf, 1 rakam"
+                                autocomplete="new-password">
+                            <button type="button" class="toggle-sifre" onclick="sifreyiToggleEt()">👁️</button>
+                        </div>
+                        <div class="sifre-guclu">
+                            <span id="sifreGucluBilgi2" style="font-size: 0.85em; color: #999;">
+                                Min. 8 karakter, 1 büyük harf, 1 rakam
+                            </span>
+                        </div>
+                    </div>
+
+                    <button class="btn-giris" id="sifreBelirleBtn">
+                        <span id="sifreBelirleYazi">Şifreyi Belirle →</span>
+                    </button>
+
+                    <div class="hata-kutu" id="sifreBelirleHata" style="display:none;"></div>
+
+                    <div class="tekrar-gonder">
+                        <button class="link-btn" onclick="geriDon()">← Geriş dön</button>
+                    </div>
+                </div>
+
+                </div>  <!-- girisFormu kapanış -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ŞİFREM İ UNUTTUM MODAL -->
+    <div id="sifremiUnuttumModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:10000;">
+        <div style="background:white;border-radius:16px;padding:40px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="text-align:center;margin-bottom:24px;font-size:48px;">🔐</div>
+            <h3 style="text-align:center;color:#1a202c;font-size:22px;margin-bottom:12px;font-weight:600;">Şifrenizi Sıfırlayın</h3>
+            <p style="text-align:center;color:#718096;font-size:14px;line-height:1.6;margin-bottom:24px;">
+                E-posta adresinize sıfırlama kodu göndereceğiz.
+            </p>
+            
+            <div id="sifremiUnuttumHata" style="display:none;color:#e53e3e;background:#fff5f5;padding:12px;border-radius:8px;border-left:4px solid #e53e3e;margin-bottom:16px;font-size:13px;"></div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block;color:#2d3748;font-weight:600;font-size:13px;margin-bottom:8px;">E-posta Adresiniz</label>
+                <input type="email" id="sifremiUnuttumEmail" placeholder="E-posta adresiniz" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;">
+            </div>
+
+            <div style="display:flex;gap:10px;">
+                <button onclick="sifremiUnuttumGonder()" style="flex:1;padding:10px;background:linear-gradient(135deg,#0077b5,#005f8e);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">Kodu Gönder</button>
+                <button onclick="sifremiUnuttumKapat()" style="flex:1;padding:10px;background:#e2e8f0;color:#4a5568;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

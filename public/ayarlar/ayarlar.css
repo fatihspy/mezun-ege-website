@@ -1,0 +1,438 @@
+/* ── Navbar Standart ─────────────────────────────────── */
+.main-header {
+    background: white;
+    border-bottom: 1px solid #e1e5e9;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.header-content {
+    width: 100%; padding: 0 24px; height: 60px;
+    display: flex; align-items: center; gap: 0;
+}
+.logo { flex-shrink: 0; margin-right: 20px; }
+.logo h2 {
+    font-size: 18px; font-weight: 700; color: #0077b5;
+    white-space: nowrap; margin: 0;
+}
+.main-nav { flex: 1; min-width: 0; }
+.main-nav ul {
+    display: flex; list-style: none;
+    gap: 0; align-items: center; margin: 0; padding: 0;
+    flex-wrap: nowrap;
+}
+.main-nav a {
+    display: block; color: #555; text-decoration: none;
+    font-weight: 500; font-size: 13px;
+    padding: 7px 9px; border-radius: 6px;
+    white-space: nowrap; transition: all 0.2s;
+}
+.main-nav a:hover { color: #0077b5; background: #f0f7fc; }
+.main-nav a.active { color: #0077b5; background: #e8f4fd; font-weight: 600; }
+.main-nav .logout-btn {
+    background: #e53e3e; color: white; border: none;
+    padding: 7px 13px; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: background 0.2s;
+    font-family: inherit;
+}
+.main-nav .logout-btn:hover { background: #c53030; }
+.user-menu {
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0; margin-left: 8px;
+}
+.user-avatar-wrap, .nav-avatar-wrap {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #0077b5, #00a0dc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+    border: 2px solid #0077b5; overflow: hidden; flex-shrink: 0;
+    cursor: pointer;
+}
+.user-avatar-wrap img, .nav-avatar-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.user-name {
+    font-weight: 600; color: #333; font-size: 13px;
+    white-space: nowrap;
+}
+.hamburger {
+    display: none; background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #555; padding: 4px;
+    flex-shrink: 0;
+}
+.mobil-menu {
+    display: none; flex-direction: column;
+    background: white; border-bottom: 1px solid #e1e5e9;
+    padding: 8px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: sticky; top: 60px; z-index: 99;
+}
+.mobil-menu.acik { display: flex; }
+.mobil-menu a {
+    padding: 12px 24px; color: #555; text-decoration: none;
+    font-size: 14px; font-weight: 500; transition: background 0.2s;
+}
+.mobil-menu a:hover { background: #f3f2ef; color: #0077b5; }
+@media (max-width: 960px) {
+    .main-nav { display: none; }
+    .hamburger { display: block; }
+    .user-name { display: none; }
+}
+
+}
+@media (max-width: 480px) {
+    
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+body { background-color: #f3f2ef; color: #333; line-height: 1.6; }
+.dashboard-container { max-width: 1200px; margin: 0 auto; background: white; min-height: 100vh; }
+
+/* ── Header ─────────────────────────────── */
+
+
+
+
+
+
+
+
+
+
+
+.logout-btn:hover { background: #c53030; }
+
+/* ── Layout ─────────────────────────────── */
+.dashboard-content { display: flex; min-height: calc(100vh - 65px); }
+
+.sidebar {
+    width: 220px; background: #f8f9fa;
+    border-right: 1px solid #e1e5e9; padding: 24px 0; flex-shrink: 0;
+}
+.sidebar ul { list-style: none; }
+.sidebar a {
+    display: block; padding: 12px 24px; color: #555;
+    text-decoration: none; font-weight: 500; font-size: 14px;
+    transition: all 0.2s; border-left: 3px solid transparent;
+}
+.sidebar a:hover, .sidebar a.active { color: #0077b5; background: #e8f4fd; border-left-color: #0077b5; }
+
+.main-content { flex: 1; padding: 28px; overflow-y: auto; }
+
+/* ── Sayfa Başlığı ───────────────────────── */
+.page-header { margin-bottom: 28px; }
+.page-title h1 { font-size: 24px; font-weight: 700; color: #1a202c; }
+.page-title p  { font-size: 14px; color: #718096; margin-top: 4px; }
+
+/* ── Ayarlar Layout ──────────────────────── */
+.ayarlar-layout { display: flex; gap: 24px; align-items: flex-start; }
+
+/* ── Sekme Menüsü ────────────────────────── */
+.sekme-menu {
+    width: 220px; flex-shrink: 0;
+    background: #f8f9fa; border: 1px solid #e1e5e9;
+    border-radius: 14px; overflow: hidden;
+    position: sticky; top: 90px;
+}
+
+.sekme-btn {
+    display: block; width: 100%; text-align: left;
+    padding: 14px 20px; border: none; background: none;
+    font-size: 14px; font-weight: 500; color: #555;
+    cursor: pointer; transition: all 0.2s;
+    border-left: 3px solid transparent;
+    font-family: 'Montserrat', sans-serif;
+    border-bottom: 1px solid #f0f0f0;
+}
+.sekme-btn:last-child { border-bottom: none; }
+.sekme-btn:hover { background: #e8f4fd; color: #0077b5; }
+.sekme-btn.aktif { background: #e8f4fd; color: #0077b5; border-left-color: #0077b5; font-weight: 600; }
+.sekme-btn.tehlikeli { color: #e53e3e; }
+.sekme-btn.tehlikeli:hover { background: #fff5f5; }
+.sekme-btn.tehlikeli.aktif { background: #fff5f5; color: #e53e3e; border-left-color: #e53e3e; }
+
+/* ── Sekme İçeriği ───────────────────────── */
+.sekme-icerik { flex: 1; }
+.sekme-panel { display: none; }
+.sekme-panel.aktif { display: block; }
+
+.panel-baslik { margin-bottom: 20px; }
+.panel-baslik h2 { font-size: 20px; font-weight: 700; color: #1a202c; margin-bottom: 4px; }
+.panel-baslik p  { font-size: 14px; color: #718096; }
+
+/* ── Form Card ───────────────────────────── */
+.form-card {
+    background: white; border: 1px solid #e1e5e9;
+    border-radius: 16px; padding: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* ── Avatar Alanı ────────────────────────── */
+.avatar-alani {
+    display: flex; align-items: center; gap: 20px;
+    margin-bottom: 28px; padding-bottom: 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.buyuk-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, #0077b5, #00a0dc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: 700; color: white;
+    flex-shrink: 0; overflow: hidden;
+}
+.buyuk-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-bilgi h3 { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 2px; }
+.avatar-bilgi p  { font-size: 13px; color: #718096; margin-bottom: 10px; }
+.avatar-degistir-btn {
+    display: inline-block; padding: 8px 16px;
+    background: #e8f4fd; color: #0077b5;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+}
+.avatar-degistir-btn:hover { background: #0077b5; color: white; }
+
+/* ── Form Elemanları ─────────────────────── */
+.form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.form-group { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.form-group.full { width: 100%; }
+
+.form-group label { font-size: 13px; font-weight: 600; color: #4a5568; }
+.form-hint        { font-size: 12px; color: #a0aec0; margin-top: 2px; }
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    border: 1px solid #e1e5e9; border-radius: 10px;
+    padding: 11px 14px; font-size: 14px;
+    font-family: 'Montserrat', sans-serif; color: #333;
+    outline: none; resize: vertical; transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group textarea:focus { border-color: #0077b5; box-shadow: 0 0 0 3px rgba(0,119,181,0.1); }
+
+.form-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+.btn-kaydet {
+    background: linear-gradient(135deg, #0077b5, #005f8e);
+    color: white; border: none; padding: 12px 28px;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,119,181,0.3);
+    font-family: 'Montserrat', sans-serif;
+}
+.btn-kaydet:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,119,181,0.4); }
+.btn-iptal {
+    background: #e2e8f0; color: #4a5568; border: none; padding: 12px 28px;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Montserrat', sans-serif;
+}
+.btn-iptal:hover { background: #cbd5e0; }
+.btn-toggle {
+    background: none; border: none; cursor: pointer; padding: 4px 8px;
+    font-size: 18px; color: #718096; transition: color 0.2s;
+}
+.btn-toggle:hover { color: #0077b5; }
+
+/* ── Form Alanları ───────────────────────── */
+.form-alan { margin-bottom: 16px; }
+.form-alan label { display: block; color: #2d3748; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.form-alan input, .form-alan textarea { 
+    width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; 
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    transition: all 0.2s;
+}
+.form-alan input:focus, .form-alan textarea:focus { 
+    outline: none; border-color: #0077b5; box-shadow: 0 0 0 3px rgba(0,119,181,0.1); 
+}
+
+/* ── Şifre Input ─────────────────────────── */
+.sifre-input { position: relative; }
+.sifre-input input { width: 100%; padding-right: 44px; }
+.goz-btn {
+    position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; color: #a0aec0; transition: color 0.2s;
+}
+.goz-btn:hover { color: #0077b5; }
+
+/* ── Şifre Güç Göstergesi ────────────────── */
+.sifre-guc {
+    margin-top: 8px; height: 4px; border-radius: 4px;
+    background: #e1e5e9; transition: all 0.3s; position: relative;
+}
+.sifre-guc::after {
+    content: ''; position: absolute; left: 0; top: 0;
+    height: 100%; border-radius: 4px;
+    transition: all 0.3s;
+}
+.sifre-guc.zayif::after   { width: 33%; background: #e53e3e; }
+.sifre-guc.orta::after    { width: 66%; background: #d97706; }
+.sifre-guc.guclu::after   { width: 100%; background: #38a169; }
+.sifre-guc-yazi {
+    font-size: 12px; margin-top: 4px; font-weight: 600;
+}
+.zayif-yazi  { color: #e53e3e; }
+.orta-yazi   { color: #d97706; }
+.guclu-yazi  { color: #38a169; }
+
+/* ── Güvenlik Bilgi Kutusu ───────────────── */
+.guvenlik-bilgi {
+    background: #e8f4fd; color: #0077b5;
+    border: 1px solid #bee3f8; border-radius: 10px;
+    padding: 12px 16px; font-size: 13px; font-weight: 500;
+    margin-bottom: 20px; line-height: 1.5;
+}
+
+/* ── Toggle Switch ───────────────────────── */
+.bildirim-grup { margin-bottom: 28px; }
+.bildirim-grup h3 {
+    font-size: 15px; font-weight: 700; color: #4a5568;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.toggle-satir {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 14px 0; border-bottom: 1px solid #f8f8f8;
+}
+.toggle-satir:last-child { border-bottom: none; }
+
+.toggle-bilgi { flex: 1; }
+.toggle-baslik { display: block; font-size: 14px; font-weight: 600; color: #2d3748; }
+.toggle-aciklama { display: block; font-size: 12px; color: #718096; margin-top: 2px; }
+
+.toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #cbd5e0; transition: 0.3s; border-radius: 26px;
+}
+.slider::before {
+    content: ''; position: absolute;
+    width: 20px; height: 20px; left: 3px; bottom: 3px;
+    background: white; border-radius: 50%; transition: 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.toggle-switch input:checked + .slider { background: #0077b5; }
+.toggle-switch input:checked + .slider::before { transform: translateX(22px); }
+
+/* ── Tehlike Alanı ───────────────────────── */
+.tehlike-card {
+    border-color: #feb2b2;
+    background: #fffafa;
+}
+.tehlike-ikon { font-size: 48px; text-align: center; margin-bottom: 16px; }
+.tehlike-card h3 { font-size: 18px; font-weight: 700; color: #c53030; margin-bottom: 10px; text-align: center; }
+.tehlike-card > p { color: #718096; font-size: 14px; margin-bottom: 16px; }
+.tehlike-liste {
+    list-style: none; background: #fff5f5;
+    border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 8px;
+}
+.tehlike-liste li { font-size: 14px; color: #4a5568; padding: 6px 0; border-bottom: 1px solid #fed7d7; }
+.tehlike-liste li:last-child { border-bottom: none; }
+
+.btn-tehlike {
+    background: linear-gradient(135deg, #e53e3e, #c53030);
+    color: white; border: none; padding: 12px 28px;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(229,62,62,0.3);
+    font-family: 'Montserrat', sans-serif;
+}
+.btn-tehlike:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(229,62,62,0.4); }
+
+/* ── Toast ───────────────────────────────── */
+.toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #2d3748; color: white;
+    padding: 14px 28px; border-radius: 12px;
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 99999; pointer-events: none;
+}
+.toast.goster { transform: translateX(-50%) translateY(0); }
+
+/* ── Modal ───────────────────────────────── */
+.modal {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background-color: rgba(0,0,0,0.6);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease; z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+.modal.show { opacity: 1; pointer-events: auto; }
+.modal-content {
+    position: relative; width: 90%; max-width: 420px;
+    background: white; border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    overflow: hidden;
+}
+.modal.show .modal-content { transform: translateY(0) scale(1); }
+.modal-icon { margin-bottom: 20px; }
+.modal-icon .icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg,#ff6b6b,#ee5a52);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 28px; color: white;
+    box-shadow: 0 8px 25px rgba(238,90,82,0.3);
+}
+.modal h3 { font-size: 22px; font-weight: 600; color: #2d3748; margin-bottom: 12px; }
+.modal-buttons { display: flex; gap: 12px; justify-content: center; }
+.modal-btn {
+    flex: 1; padding: 12px 24px; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s;
+    font-family: 'Montserrat', sans-serif;
+}
+.modal-btn.confirm { background: linear-gradient(135deg,#0077b5,#005f8e); color: white; box-shadow: 0 4px 15px rgba(0,119,181,0.3); }
+.modal-btn.confirm:hover { transform: translateY(-2px); }
+.modal-btn.cancel { background: #e2e8f0; color: #4a5568; border: 2px solid #cbd5e0; }
+.modal-btn.cancel:hover { background: #cbd5e0; }
+
+
+
+
+
+
+
+@media (max-width:768px) {
+    .sidebar { display:none; }
+    .ayarlar-layout { flex-direction:column; }
+    .sekme-menu { width:100%; position:static; max-height:none; border-right:none; border-bottom:1px solid #e1e5e9; display:flex; overflow-x:auto; }
+    .sekme-menu button { flex:0 0 auto; }
+    .main-content { padding:16px; }
+    .form-row { flex-direction:column; }
+    .otp-bilgi-karti { flex-direction:column; gap:14px; }
+}
+@media (max-width:480px) {
+    .ayarlar-layout { padding:0; }
+    .sekme-menu { padding:0 12px; }
+    .sekme-menu button { font-size:12px; padding:10px 8px; }
+    .main-content { padding:12px; }
+    .form-row { flex-direction:column; gap:12px; }
+    .form-group input { font-size:13px; padding:10px; }
+    .btn-kaydet { width:100%; }
+    .otp-bilgi-karti { padding:16px; }
+    .otp-bilgi-ikon { font-size:36px; }
+}
+
+/* ── OTP Bilgi Kartı ─────────────────────── */
+.otp-bilgi-karti {
+    display:flex; gap:20px; align-items:flex-start;
+    background:#f8f9fa; border-radius:14px; padding:24px;
+    border:1px solid #e1e5e9;
+}
+.otp-bilgi-ikon { font-size:42px; flex-shrink:0; }
+.otp-bilgi-icerik h3 { font-size:16px; font-weight:700; color:#1a202c; margin-bottom:8px; }
+.otp-bilgi-icerik p  { font-size:14px; color:#4a5568; line-height:1.7; margin-bottom:14px; }
+.otp-avantaj-liste { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.otp-avantaj-liste li { font-size:13px; color:#4a5568; }

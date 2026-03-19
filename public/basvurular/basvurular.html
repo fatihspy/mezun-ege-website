@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="basvurular.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>Başvurularım - Egemyo Mezun</title>
+
+<style>
+.bildirim-zil-wrap {
+    position:relative; cursor:pointer; font-size:20px;
+    padding:4px 8px; border-radius:8px; transition:background 0.2s;
+}
+.bildirim-zil-wrap:hover { background:#f0f4f8; }
+.zil-badge {
+    position:absolute; top:-2px; right:-2px;
+    background:#e53e3e; color:white; border-radius:10px;
+    font-size:10px; font-weight:700; min-width:16px; height:16px;
+    align-items:center; justify-content:center; padding:0 3px;
+}
+.bildirim-panel {
+    display:none; position:absolute; top:calc(100% + 8px); right:0;
+    width:300px; background:white; border:1px solid #e1e5e9;
+    border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    z-index:1000; max-height:360px; overflow-y:auto;
+    animation:fadeIn 0.2s ease;
+}
+.bildirim-panel.show { display:block; }
+.bildirim-item {
+    padding:12px 16px; border-bottom:1px solid #f0f0f0;
+    cursor:pointer; display:flex; gap:10px; align-items:flex-start;
+    transition:background 0.15s;
+}
+.bildirim-item:hover { background:#f8f9fa; }
+.bildirim-item.okunmamis { background:#e8f4fd; }
+.bildirim-tip-ikon { font-size:18px; flex-shrink:0; }
+.bildirim-mesaj { font-size:13px; color:#1a202c; font-weight:500; margin-bottom:3px; }
+.bildirim-tarih { font-size:11px; color:#a0aec0; }
+.bildirim-bos { padding:24px; text-align:center; color:#a0aec0; font-size:13px; }
+</style>
+<style>
+.bildirim-zil-wrap{position:relative;cursor:pointer;font-size:20px;padding:4px 8px;border-radius:8px;transition:background 0.2s;}
+.bildirim-zil-wrap:hover{background:#f0f4f8;}
+.zil-badge{position:absolute;top:-2px;right:-2px;background:#e53e3e;color:white;border-radius:10px;font-size:10px;font-weight:700;min-width:16px;height:16px;display:none;align-items:center;justify-content:center;padding:0 3px;}
+.bildirim-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:white;border:1px solid #e1e5e9;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000;max-height:360px;overflow-y:auto;}
+.bildirim-panel.show{display:block;}
+.bildirim-item{padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:background 0.15s;}
+.bildirim-item:hover{background:#f8f9fa;}
+.bildirim-item.okunmamis{background:#e8f4fd;}
+.bildirim-tip-ikon{font-size:18px;flex-shrink:0;}
+.bildirim-mesaj{font-size:13px;color:#1a202c;font-weight:500;margin-bottom:3px;}
+.bildirim-tarih{font-size:11px;color:#a0aec0;}
+.bildirim-bos{padding:24px;text-align:center;color:#a0aec0;font-size:13px;}
+</style>
+</head>
+<body>
+    
+    <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h2>Egemyo Mezun</h2>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="../dashboard/dashboard.html">Ana Sayfa</a></li>
+                        <li><a href="../profile/profile.html">Profil</a></li>
+                        <li><a href="../ilanlar/ilanlar.html">İlanlar</a></li>
+                        <li><a href="../mezunlar/mezunlar.html">Mezunlar</a></li>
+                        <li><a href="../mesajlar/mesajlar.html">Mesajlar</a></li>
+                        <li><a href="../basvurular/basvurular.html" class="active">Başvurularım</a></li>
+                        <li><a href="../ayarlar/ayarlar.html">Ayarlar</a></li>
+                        <li><button class="logout-btn">Çıkış</button></li>
+                    </ul>
+                </nav>
+                <div class="user-menu">
+                    <div class="bildirim-zil-wrap" id="bildirimZili" onclick="bildirimPanelAc()">
+                        🔔<span class="zil-badge" style="display:none;">0</span>
+                        <div class="bildirim-panel" id="bildirimPanel"></div>
+                    </div>
+                    <div class="user-avatar-wrap" id="navAvatarWrap"></div>
+                    <span class="user-name" id="navUserName">Kullanıcı</span>
+                    <button class="hamburger" id="hamburger">☰</button>
+                </div>
+            </div>
+        </header>
+    <div class="mobil-menu" id="mobilMenu">
+            <a href="../dashboard/dashboard.html">🏠 Ana Sayfa</a>
+            <a href="../profile/profile.html">👤 Profil</a>
+            <a href="../ilanlar/ilanlar.html">📋 İlanlar</a>
+            <a href="../mezunlar/mezunlar.html">👥 Mezunlar</a>
+            <a href="../mesajlar/mesajlar.html">💬 Mesajlar</a>
+            <a href="../basvurular/basvurular.html">📄 Başvurularım</a>
+            <a href="../ayarlar/ayarlar.html">⚙️ Ayarlar</a>
+            <button onclick="document.querySelector('.logout-btn').click()" style="width:100%; padding:12px 24px; text-align:left; background:none; border:none; color:#e53e3e; text-decoration:none; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; display:block;">🚪 Çıkış</button>
+        </div>
+    <div class="dashboard-container">
+        <div class="dashboard-content">
+            <aside class="sidebar">
+                <nav><ul>
+                    <li><a href="../dashboard/dashboard.html">🏠 Ana Sayfa</a></li>
+                    <li><a href="../profile/profile.html">👤 Profil</a></li>
+                    <li><a href="../ilanlar/ilanlar.html">📋 İlanlar</a></li>
+                    <li><a href="../mezunlar/mezunlar.html">Mezunlar</a></li>
+                    <li><a href="../mesajlar/mesajlar.html">💬 Mesajlar</a></li>
+                    <li><a href="basvurular.html" class="active">📄 Başvurularım</a></li>
+                    <li><a href="../ayarlar/ayarlar.html">⚙️ Ayarlar</a></li>
+                </ul></nav>
+            </aside>
+
+            <main class="main-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>📄 Başvurularım</h1>
+                        <p>Tüm iş başvurularınızı buradan takip edin</p>
+                    </div>
+                    <a href="../ilanlar/ilanlar.html" class="btn-primary">+ Yeni Başvur</a>
+                </div>
+
+                <div class="durum-bantlari">
+                    <div class="bant" data-filtre="">
+                        <span class="bant-sayi" id="toplamSayi">0</span>
+                        <span class="bant-label">Toplam</span>
+                    </div>
+                    <div class="bant beklemede" data-filtre="beklemede">
+                        <span class="bant-sayi" id="beklemeSayi">0</span>
+                        <span class="bant-label">⏳ Beklemede</span>
+                    </div>
+                    <div class="bant gorusme" data-filtre="gorusme">
+                        <span class="bant-sayi" id="gorSayi">0</span>
+                        <span class="bant-label">🤝 Görüşme</span>
+                    </div>
+                    <div class="bant kabul" data-filtre="kabul">
+                        <span class="bant-sayi" id="kabulSayi">0</span>
+                        <span class="bant-label">✅ Kabul</span>
+                    </div>
+                    <div class="bant reddedildi" data-filtre="reddedildi">
+                        <span class="bant-sayi" id="reddSayi">0</span>
+                        <span class="bant-label">❌ Reddedildi</span>
+                    </div>
+                </div>
+
+                <div class="filtre-bar">
+                    <div class="arama-kutu">
+                        <span>🔍</span>
+                        <input type="text" id="aramaInput" placeholder="Pozisyon veya şirket ara...">
+                    </div>
+                    <select id="siralaFiltre">
+                        <option value="yeni">En Yeni</option>
+                        <option value="eski">En Eski</option>
+                    </select>
+                </div>
+
+                <div id="basvuruListesi"></div>
+
+                <div class="bos-durum" id="bosDurum" style="display:none;">
+                    <div class="bos-ikon">📭</div>
+                    <h3>Henüz başvuru yok</h3>
+                    <p>İlanlar sayfasına giderek başvurabilirsiniz.</p>
+                    <a href="../ilanlar/ilanlar.html" class="btn-primary">İlanlara Git</a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="logout-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon">🚪</div></div>
+            <h3>Çıkış Yap</h3>
+            <p style="color:#718096;margin-bottom:24px;">Çıkış yapmak istediğinizden emin misiniz?</p>
+            <div class="modal-buttons">
+                <button id="confirm-logout" class="modal-btn confirm">Evet</button>
+                <button id="cancel-logout" class="modal-btn cancel">Hayır</button>
+            </div>
+        </div>
+    </div>
+    <div id="success-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon" style="background:linear-gradient(135deg,#48bb78,#38a169);box-shadow:0 8px 25px rgba(56,161,105,0.3);">✅</div></div>
+            <h3>Çıkış Başarılı</h3>
+            <p style="color:#718096;margin-bottom:24px;">Giriş ekranına yönlendiriliyorsunuz...</p>
+            <div class="modal-buttons">
+                <button id="ok-success" class="modal-btn confirm">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="basvurular.js"></script>
+</body>
+</html>

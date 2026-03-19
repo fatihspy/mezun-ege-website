@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="profil_doldurma.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>Profilini Oluştur - Egemyo Mezun</title>
+</head>
+<body>
+
+    <!-- Üst Bar -->
+    <header class="setup-header">
+        <div class="setup-header-icerik">
+            <h2>Egemyo Mezun</h2>
+            <button class="atla-btn" id="atlaBtn">Şimdilik Atla →</button>
+        </div>
+    </header>
+
+    <!-- Ana Wrap -->
+    <div class="setup-wrap">
+
+        <!-- İlerleme Çubuğu -->
+        <div class="ilerleme-wrap">
+            <div class="ilerleme-bar">
+                <div class="ilerleme-dolu" id="ilerlemeDolu"></div>
+            </div>
+            <span class="ilerleme-yazi" id="ilerlemeYazi">1 / 5</span>
+        </div>
+
+        <!-- ══ ADIM 1: Temel Bilgiler ══ -->
+        <div class="adim aktif" id="adim-1">
+            <div class="adim-ikon">👋</div>
+            <h1>Seni tanıyalım!</h1>
+            <p class="adim-aciklama">Diğer mezunlar ve işverenler seni bu bilgilerle bulacak.</p>
+
+            <!-- Mezun / Öğrenci Seçimi -->
+            <div class="tip-secici">
+                <div class="tip-kart aktif" id="tip-mezun" onclick="tipSec('mezun')">
+                    <div class="tip-ikon">🎓</div>
+                    <div class="tip-baslik">Mezunum</div>
+                    <div class="tip-aciklama">Okulu bitirdim, iş arıyorum</div>
+                </div>
+                <div class="tip-kart" id="tip-ogrenci" onclick="tipSec('ogrenci')">
+                    <div class="tip-ikon">📚</div>
+                    <div class="tip-baslik">Aktif Öğrenciyim</div>
+                    <div class="tip-aciklama">Hala okuyorum, staj arıyorum</div>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Ad *</label>
+                    <input type="text" id="s1Ad" placeholder="Adınız">
+                </div>
+                <div class="form-group">
+                    <label>Soyad *</label>
+                    <input type="text" id="s1Soyad" placeholder="Soyadınız">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Unvan / Headline</label>
+                <input type="text" id="s1Unvan" placeholder="Örn: Frontend Developer | Egemyo Mezunu">
+                <span class="form-ipucu">Bu metin profilinde büyük yazıyla görünecek.</span>
+            </div>
+            <div class="form-group">
+                <label>Konum</label>
+                <input type="text" id="s1Konum" placeholder="Örn: İzmir, Türkiye">
+            </div>
+            <div class="adim-footer">
+                <div></div>
+                <button class="btn-ileri" onclick="ileri(1)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 2: Eğitim ══ -->
+        <div class="adim" id="adim-2">
+            <div class="adim-ikon">🎓</div>
+            <h1>Eğitim Bilgilerin</h1>
+            <p class="adim-aciklama" id="egitimAciklama">Hangi bölümden mezun oldun?</p>
+            <div class="form-group">
+                <label>Okul Adı</label>
+                <input type="text" id="s2Okul" value="Ege Meslek Yüksekokulu" placeholder="Okul adınız">
+            </div>
+            <div class="form-group">
+                <label id="bolumLabel">Mezun Olduğun Bölüm *</label>
+                <select id="s2Bolum">
+                    <option value="" disabled selected>Bölüm seçiniz</option>
+                    <option>Basım ve Yayım Teknolojileri</option>
+                    <option>Bilgisayar Programcılığı</option>
+                    <option>Biyomedikal Cihaz Teknolojisi</option>
+                    <option>Elektrik</option>
+                    <option>Elektrikli Cihaz Teknolojisi</option>
+                    <option>Elektronik Haberleşme Teknolojisi</option>
+                    <option>Elektronik Teknolojisi</option>
+                    <option>Endüstriyel Kalıpçılık</option>
+                    <option>Gıda Teknolojisi</option>
+                    <option>Grafik Tasarımı</option>
+                    <option>İç Mekan Tasarımı</option>
+                    <option>İklimlendirme ve Soğutma Teknolojisi</option>
+                    <option>İşletme Yönetimi</option>
+                    <option>Kimya Teknolojisi</option>
+                    <option>Kontrol ve Otomasyon Teknolojisi</option>
+                    <option>Makina</option>
+                    <option>Makina Resim ve Konstrüksiyon</option>
+                    <option>Mekatronik</option>
+                    <option>Meyve ve Sebze İşleme Teknolojisi</option>
+                    <option>Mobilya ve Dekorasyon</option>
+                    <option>Muhasebe ve Vergi Uygulamaları</option>
+                    <option>Otomotiv Gövde ve Yüzey İşlemleri Teknolojisi</option>
+                    <option>Otomotiv Teknolojisi</option>
+                    <option>Otonom Sistemleri Teknikerliği</option>
+                    <option>Oyun Geliştirme ve Programlama</option>
+                    <option>Ön Yüz Yazılım Geliştirme</option>
+                    <option>Polimer Teknolojisi</option>
+                    <option>Seramik Cam ve Tasarımı</option>
+                    <option>Sivil Savunma ve İtfaiyecilik</option>
+                    <option>Tarım Makineleri</option>
+                </select>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label id="mezYilLabel">Mezuniyet Yılı *</label>
+                    <input type="number" id="s2MezYil" placeholder="2023" min="1990" max="2030">
+                </div>
+                <div class="form-group">
+                    <label id="notLabel" style="display:none;">Not Ortalaması</label>
+                    <input type="text" id="s2Not" placeholder="Örn: 3.2 / 4.0" style="display:none;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Bölüm Hakkında Kısa Bilgi</label>
+                <textarea id="s2BolumAciklama" rows="2" placeholder="Bölümünüz hakkında kısa bir açıklama..."></textarea>
+            </div>
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(2)">← Geri</button>
+                <button class="btn-ileri" onclick="ileri(2)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 3: İş Deneyimi ══ -->
+        <div class="adim" id="adim-3">
+            <div class="adim-ikon">💼</div>
+            <h1>İş Deneyimin</h1>
+            <p class="adim-aciklama">Çalıştığın ya da staj yaptığın yerler var mı?</p>
+
+            <div id="deneyimListesi3" class="eklenen-listesi"></div>
+
+            <div class="ekle-formu" id="deneyimFormu3">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Pozisyon</label>
+                        <input type="text" id="s3Pozisyon" placeholder="Frontend Developer">
+                    </div>
+                    <div class="form-group">
+                        <label>Şirket</label>
+                        <input type="text" id="s3Sirket" placeholder="Tech A.Ş.">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Başlangıç</label>
+                        <input type="text" id="s3Baslangic" placeholder="Oca 2023">
+                    </div>
+                    <div class="form-group">
+                        <label>Bitiş</label>
+                        <input type="text" id="s3Bitis" placeholder="Günümüz">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="s3Aciklama" rows="2" placeholder="Yaptığın işler..."></textarea>
+                </div>
+                <button class="btn-ekle" id="deneyimEkle3">+ Deneyim Ekle</button>
+            </div>
+
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(3)">← Geri</button>
+                <button class="btn-ileri" onclick="ileri(3)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 4: Beceriler & İletişim ══ -->
+        <div class="adim" id="adim-4">
+            <div class="adim-ikon">⚡</div>
+            <h1>Beceriler & İletişim</h1>
+            <p class="adim-aciklama">Hangi becerilere sahipsin? Nasıl ulaşılabilirsin?</p>
+
+            <!-- Teknik Beceriler -->
+            <div class="bolum-baslik">🛠️ Teknik Beceriler</div>
+
+            <div id="beceriEklenenListesi" class="eklenen-listesi"></div>
+
+            <div class="ekle-formu">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Beceri Adı</label>
+                        <input type="text" id="s4BeceriAd" placeholder="Örn: JavaScript, AutoCAD, Python...">
+                    </div>
+                    <div class="form-group">
+                        <label>Seviye (1-5)</label>
+                        <div class="seviye-secici" id="beceriSeviyeSecici">
+                            <button class="seviye-btn" data-val="1" title="Başlangıç">1</button>
+                            <button class="seviye-btn" data-val="2" title="Temel">2</button>
+                            <button class="seviye-btn" data-val="3" title="Orta">3</button>
+                            <button class="seviye-btn" data-val="4" title="İyi">4</button>
+                            <button class="seviye-btn" data-val="5" title="Uzman">5</button>
+                        </div>
+                        <span class="seviye-aciklama" id="beceriSeviyeAciklama">Seviye seçin</span>
+                    </div>
+                </div>
+                <button class="btn-ekle" id="beceriEkleBtn">+ Beceri Ekle</button>
+            </div>
+
+            <div class="beceri-oneri" style="margin-top:8px;">
+                <span class="oneri-baslik">Hızlı Ekle (seviye 3 ile eklenir):</span>
+                <div id="beceriOneriler"></div>
+            </div>
+
+            <div class="separator"></div>
+
+            <!-- Yabancı Dil -->
+            <div class="bolum-baslik">🌍 Yabancı Diller</div>
+
+            <div id="dilEklenenListesi" class="eklenen-listesi"></div>
+
+            <div class="ekle-formu">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Dil</label>
+                        <select id="s4DilAd">
+                            <option value="" disabled selected>Dil seçin</option>
+                            <option>İngilizce</option>
+                            <option>Almanca</option>
+                            <option>Fransızca</option>
+                            <option>İspanyolca</option>
+                            <option>İtalyanca</option>
+                            <option>Rusça</option>
+                            <option>Arapça</option>
+                            <option>Çince</option>
+                            <option>Japonca</option>
+                            <option>Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Seviye (1-5)</label>
+                        <div class="seviye-secici" id="dilSeviyeSecici">
+                            <button class="seviye-btn" data-val="1" title="Başlangıç">1</button>
+                            <button class="seviye-btn" data-val="2" title="Temel">2</button>
+                            <button class="seviye-btn" data-val="3" title="Orta">3</button>
+                            <button class="seviye-btn" data-val="4" title="İyi">4</button>
+                            <button class="seviye-btn" data-val="5" title="Akıcı">5</button>
+                        </div>
+                        <span class="seviye-aciklama" id="dilSeviyeAciklama">Seviye seçin</span>
+                    </div>
+                </div>
+                <button class="btn-ekle" id="dilEkleBtn">+ Dil Ekle</button>
+            </div>
+
+            <div class="separator"></div>
+
+            <!-- İletişim -->
+            <div class="bolum-baslik">📬 İletişim Bilgileri</div>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Telefon</label>
+                    <input type="tel" id="s4Telefon" placeholder="+90 5xx xxx xx xx">
+                </div>
+                <div class="form-group">
+                    <label>LinkedIn</label>
+                    <input type="text" id="s4Linkedin" placeholder="linkedin.com/in/kullanici">
+                </div>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Website / Portfolio</label>
+                    <input type="text" id="s4Web" placeholder="orneksite.com">
+                </div>
+                <div class="form-group">
+                    <label>GitHub</label>
+                    <input type="text" id="s4Github" placeholder="github.com/kullanici">
+                </div>
+            </div>
+
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(4)">← Geri</button>
+                <button class="btn-ileri" onclick="ileri(4)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 5: Hakkımda ══ -->
+        <div class="adim" id="adim-5">
+            <div class="adim-ikon">✨</div>
+            <h1>Son Dokunuş!</h1>
+            <p class="adim-aciklama">Kendini kısaca tanıt. İşverenler ve diğer mezunlar bu yazıyı görecek.</p>
+
+            <div class="form-group">
+                <label>Hakkımda</label>
+                <textarea id="s5Hakkimda" rows="5" placeholder="Kendinden kısaca bahset. Ne tür projelerde çalışmak istersin? Güçlü yönlerin neler?"></textarea>
+                <span class="form-ipucu" id="karakterSayac">0 / 300 karakter</span>
+            </div>
+
+            <div class="ozet-kart" id="ozetKart">
+                <h3>📋 Profil Özeti</h3>
+                <div id="ozetIcerik"></div>
+            </div>
+
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(5)">← Geri</button>
+                <button class="btn-tamamla" id="tamamlaBtn">🚀 Profili Tamamla!</button>
+            </div>
+        </div>
+
+        <!-- ══ TAMAMLANDI ══ -->
+        <div class="adim" id="adim-bitti">
+            <div class="bitti-animasyon">🎉</div>
+            <h1>Profilin Hazır!</h1>
+            <p class="adim-aciklama" id="bittiAciklama">Harika görünüyor!</p>
+            <div class="bitti-butonlar">
+                <button class="btn-tamamla" id="bittiIlanBtn">📋 İlanlara Bak</button>
+                <button class="btn-geri" onclick="window.location.href='../profile/profile.html'">👤 Profilimi Gör</button>
+                <button class="btn-geri" onclick="window.location.href='../dashboard/dashboard.html'">🏠 Ana Sayfaya Git</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="profil_doldurma.js"></script>
+</body>
+</html>

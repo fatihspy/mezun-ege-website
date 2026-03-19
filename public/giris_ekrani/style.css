@@ -1,0 +1,243 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Montserrat',sans-serif; }
+body { background:#f0f4f8; min-height:100vh; display:flex; }
+
+/* ── İki Panel Layout ────────────────────── */
+.giris-wrap { display:flex; min-height:100vh; width:100%; }
+
+/* Sol Panel */
+.sol-panel {
+    flex:1; background:linear-gradient(135deg, #0f2942 0%, #0077b5 60%, #00a0dc 100%);
+    display:flex; align-items:center; justify-content:center; padding:48px;
+}
+.sol-icerik { max-width:380px; color:white; }
+.logo-alan { display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+.logo-daire {
+    width:52px; height:52px; border-radius:14px;
+    background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px; font-weight:700; color:white;
+}
+.logo-alan h1 { font-size:26px; font-weight:700; }
+.sol-slogan { font-size:16px; opacity:0.85; line-height:1.7; margin-bottom:36px; }
+.ozellik-liste { display:flex; flex-direction:column; gap:14px; }
+.ozellik { font-size:14px; opacity:0.9; display:flex; align-items:center; gap:10px; }
+
+/* Sağ Panel */
+.sag-panel {
+    width:480px; flex-shrink:0;
+    background:white; display:flex;
+    align-items:center; justify-content:center; padding:40px 32px;
+}
+.giris-kart { width:100%; max-width:380px; }
+
+/* ── Sekme Seçici ─────────────────────────── */
+.sekme-secici {
+    display:flex; gap:8px; margin-bottom:32px;
+    background:#f8f9fa; border-radius:12px; padding:4px;
+}
+.sekme {
+    flex:1; padding:10px; border:none; background:none;
+    border-radius:10px; font-size:13px; font-weight:600;
+    color:#718096; cursor:pointer; transition:all 0.2s;
+    font-family:'Montserrat',sans-serif;
+}
+.sekme.aktif { background:white; color:#0077b5; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+
+/* ── Başlık ──────────────────────────────── */
+.giris-baslik { margin-bottom:28px; }
+.giris-baslik h2 { font-size:24px; font-weight:700; color:#1a202c; margin-bottom:6px; }
+.giris-baslik p  { font-size:14px; color:#718096; }
+
+/* ── Form ────────────────────────────────── */
+.giris-adim { display:none; }
+.giris-adim.aktif { display:block; animation:fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.form-alan { margin-bottom:20px; }
+.form-alan label { display:block; font-size:13px; font-weight:600; color:#4a5568; margin-bottom:8px; }
+
+.input-wrap {
+    display:flex; align-items:center; gap:10px;
+    border:2px solid #e1e5e9; border-radius:12px;
+    padding:0 14px; background:white; transition:border-color 0.2s;
+}
+.input-wrap:focus-within { border-color:#0077b5; box-shadow:0 0 0 4px rgba(0,119,181,0.1); }
+.input-ikon { font-size:18px; flex-shrink:0; }
+.input-wrap input {
+    flex:1; border:none; outline:none; padding:14px 0;
+    font-size:14px; font-family:'Montserrat',sans-serif; color:#333;
+}
+
+.mail-ipucu { font-size:12px; color:#a0aec0; margin-top:6px; display:block; }
+
+/* ── Toggle Şifre Göster/Gizle ──────────────── */
+.toggle-sifre {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.toggle-sifre:hover {
+    opacity: 0.7;
+}
+
+.sifre-guclu {
+    margin-top: 6px;
+    display: block;
+}
+
+/* ── Input Hata Durumu ──────────────────────── */
+.input-wrap input.hatali {
+    border-color: #e53e3e;
+    background: #fff5f5;
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+}
+
+.mail-ozet {
+    background:#f8f9fa; border:1px solid #e1e5e9;
+    border-radius:10px; padding:12px 16px;
+    font-size:13px; color:#4a5568; margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+}
+
+/* ── Buton ───────────────────────────────── */
+.btn-giris {
+    width:100%; padding:14px; background:linear-gradient(135deg,#0077b5,#005f8e);
+    color:white; border:none; border-radius:12px; font-size:15px;
+    font-weight:700; cursor:pointer; transition:all 0.2s;
+    font-family:'Montserrat',sans-serif;
+    box-shadow:0 4px 14px rgba(0,119,181,0.35);
+}
+.btn-giris:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,119,181,0.45); }
+.btn-giris:disabled { opacity:0.6; transform:none; cursor:not-allowed; }
+
+/* ── Hata Kutusu ─────────────────────────── */
+.hata-kutu {
+    margin-top:14px; background:#fff5f5; color:#e53e3e;
+    border:1px solid #feb2b2; border-radius:10px;
+    padding:10px 14px; font-size:13px; font-weight:600;
+}
+
+/* ── Alt Linkler ─────────────────────────── */
+.tekrar-gonder {
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    justify-content:center; margin-top:20px; font-size:13px; color:#718096;
+}
+.link-btn {
+    background:none; border:none; color:#0077b5;
+    font-size:13px; font-weight:600; cursor:pointer;
+    text-decoration:underline; font-family:'Montserrat',sans-serif;
+}
+.link-btn:hover { color:#005f8e; }
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width:1024px) {
+    .sol-panel { padding:32px 24px; }
+    .sol-icerik { max-width:300px; }
+    .sag-panel { width:480px; }
+}
+@media (max-width:768px) {
+    .giris-wrap { flex-direction:column; }
+    .sol-panel { 
+        display:flex; 
+        width:100%; 
+        min-height:auto; 
+        padding:32px 24px;
+        justify-content:center;
+        align-items:center;
+    }
+    .sol-icerik { max-width:100%; text-align:center; }
+    .sag-panel { 
+        width:100%; 
+        padding:32px 24px;
+        min-height:auto;
+    }
+    .logo-alan { justify-content:center; }
+    .ozellik-liste { align-items:center; }
+    .giris-baslik h2 { font-size:20px; }
+}
+@media (max-width:480px) {
+    .sol-panel { 
+        padding:24px 16px; 
+        border-radius:0;
+    }
+    .sag-panel { 
+        padding:20px 14px; 
+    }
+    .sol-icerik { max-width:100%; }
+    .logo-alan h1 { font-size:22px; }
+    .sol-slogan { font-size:14px; margin-bottom:20px; }
+    .giris-baslik h2 { font-size:18px; margin-bottom:12px; }
+    .giris-baslik p { font-size:13px; }
+    .form-alan { margin-bottom:16px; }
+    .input-wrap { padding:0 12px; }
+    .input-wrap input { padding:12px 0; font-size:13px; }
+    .btn-giris { padding:12px; font-size:14px; }
+    .sekme { font-size:12px; padding:8px; }
+    .mail-ozet { font-size:12px; margin-bottom:6px; }
+    .hatirla-wrap { padding:10px 12px; }
+    .hatirla-baslik { font-size:12px; }
+    .hatirla-aciklama { font-size:10px; }
+}
+
+/* ── Beni Hatırla ────────────────────────── */
+.hatirla-wrap {
+    display:flex; align-items:center; gap:12px;
+    margin-top:16px; cursor:pointer; padding:12px 14px;
+    background:#f8f9fa; border-radius:10px; border:1px solid #e1e5e9;
+    transition:all 0.2s;
+}
+.hatirla-wrap:hover { border-color:#0077b5; background:#e8f4fd; }
+.hatirla-wrap input[type="checkbox"] {
+    width:18px; height:18px; accent-color:#0077b5;
+    cursor:pointer; flex-shrink:0;
+}
+.hatirla-metin { display:flex; flex-direction:column; gap:2px; }
+.hatirla-baslik  { font-size:13px; font-weight:600; color:#2d3748; }
+.hatirla-aciklama{ font-size:11px; color:#718096; }
+
+/* ── Rol Seçici (Kayıt) ─────────────────────── */
+.rol-secici {
+    display:flex; gap:12px; margin-bottom:24px;
+}
+.rol-btn {
+    flex:1; padding:12px; border:2px solid #e1e5e9;
+    border-radius:10px; background:white; color:#718096;
+    font-size:13px; font-weight:600; cursor:pointer;
+    transition:all 0.2s; font-family:'Montserrat',sans-serif;
+}
+.rol-btn.aktif { 
+    border-color:#0077b5; background:#e8f4fd; color:#0077b5;
+    box-shadow:0 2px 8px rgba(0,119,181,0.15);
+}
+.rol-btn:hover { border-color:#0077b5; }
+
+/* ── Form Container (Giriş/Kayıt toggle) ────────── */
+.form-container { 
+    display:none; 
+    animation: fadeIn 0.3s ease;
+}
+.form-container.aktif { 
+    display:block;
+}
+
+/* ── Form Footer (Alt linkler) ──────────────────── */
+.form-footer {
+    text-align:center; margin-top:20px;
+    font-size:13px; color:#718096;
+}
+.form-footer .link-btn {
+    display:inline;
+}

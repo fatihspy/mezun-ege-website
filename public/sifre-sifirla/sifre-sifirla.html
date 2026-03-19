@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>Şifre Sıfırlama - Egemyo Mezun</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', -apple-system, 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 48px 40px; max-width: 480px; width: 100%; }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo h1 { color: #0077b5; font-size: 28px; font-weight: 700; }
+        .icon { text-align: center; margin-bottom: 32px; font-size: 64px; }
+        h2 { text-align: center; color: #1a202c; font-size: 24px; margin-bottom: 12px; font-weight: 600; }
+        .subtitle { text-align: center; color: #718096; font-size: 15px; margin-bottom: 32px; line-height: 1.6; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; color: #2d3748; font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+        input[type="text"], input[type="email"], input[type="password"] { 
+            width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 15px; transition: all 0.3s; font-family: inherit;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus { 
+            outline: none; border-color: #0077b5; box-shadow: 0 0 0 3px rgba(0,119,181,0.1); 
+        }
+        .buttons { display: flex; gap: 12px; margin-top: 20px; }
+        button { flex: 1; padding: 12px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: 'Montserrat', sans-serif; }
+        .btn-reset { background: linear-gradient(135deg, #0077b5, #005f8e); color: white; }
+        .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,119,181,0.4); }
+        .btn-cancel { background: #e2e8f0; color: #4a5568; }
+        .btn-cancel:hover { background: #cbd5e0; }
+        .error { color: #e53e3e; background: #fff5f5; padding: 12px 16px; border-radius: 8px; border-left: 4px solid #e53e3e; margin-bottom: 16px; font-size: 13px; }
+        .success { color: #276749; background: #f0fdf4; padding: 12px 16px; border-radius: 8px; border-left: 4px solid #22c55e; margin-bottom: 16px; font-size: 13px; }
+        .loading { opacity: 0.6; pointer-events: none; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .help-text { text-align: center; color: #a0aec0; font-size: 13px; margin-top: 24px; line-height: 1.6; }
+        .toggle-sifre { background: none; border: none; cursor: pointer; font-size: 18px; padding: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Egemyo Mezun</h1>
+        </div>
+
+        <div class="icon">🔐</div>
+
+        <h2>Şifrenizi Sıfırlayın</h2>
+        <p class="subtitle">Yeni bir şifre belirlemeyi tamamlamak için aşağıdaki adımları izleyin.</p>
+
+        <form id="resetForm">
+            <div id="errorMsg"></div>
+            <div id="successMsg"></div>
+
+            <div id="adim1">
+                <div class="form-group">
+                    <label for="email">Email Adres</label>
+                    <input type="email" id="email" placeholder="example@ogrenci.ege.edu.tr" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="kod">Sıfırlama Kodu (6 haneli)</label>
+                    <input type="text" id="kod" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="yeniSifre">Yeni Şifre</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="password" id="yeniSifre" placeholder="Min. 8 karakter, 1 büyük harf, 1 rakam" required style="flex:1;">
+                        <button type="button" class="toggle-sifre" onclick="togglePassword('yeniSifre')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="yeniSifreTekrar">Yeni Şifre (Tekrar)</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="password" id="yeniSifreTekrar" placeholder="Şifrenizi tekrar girin" required style="flex:1;">
+                        <button type="button" class="toggle-sifre" onclick="togglePassword('yeniSifreTekrar')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="submit" class="btn-reset">Şifreyi Sıfırla</button>
+                    <button type="button" class="btn-cancel" onclick="window.location.href='../giris_ekrani/index.html'">İptal</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="help-text">
+            <p>💡 <strong>İpucu:</strong> Sıfırlama kodu email adresinize gönderilmiştir. Spam klasörünü de kontrol edin.</p>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script>
+        const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth';
+        const resetEmail = sessionStorage.getItem('resetEmail') || '';
+
+        // Email'i pre-fill et
+        if (resetEmail) {
+            document.getElementById('email').value = resetEmail;
+        }
+
+        // Şifre toggle
+        function togglePassword(fieldId) {
+            const input = document.getElementById(fieldId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Form gönderme
+        document.getElementById('resetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const code = document.getElementById('kod').value.trim();
+            const newPassword = document.getElementById('yeniSifre').value;
+            const newPasswordRetry = document.getElementById('yeniSifreTekrar').value;
+
+            if (!email || !code || !newPassword || !newPasswordRetry) {
+                showError('Lütfen tüm alanları doldurun.');
+                return;
+            }
+
+            if (code.length !== 6) {
+                showError('Lütfen 6 haneli kodu tam girin.');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showError('Şifre minimum 8 karakter olmalı.');
+                return;
+            }
+
+            if (!/[A-Z]/.test(newPassword)) {
+                showError('Şifre en az 1 büyük harf içermeli.');
+                return;
+            }
+
+            if (!/[0-9]/.test(newPassword)) {
+                showError('Şifre en az 1 rakam içermeli.');
+                return;
+            }
+
+            if (newPassword !== newPasswordRetry) {
+                showError('Şifreler eşleşmiyor.');
+                return;
+            }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Şifre Sıfırlanıyor...';
+
+            try {
+                const response = await fetch(`${API_URL}/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        code,
+                        newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.basarili) {
+                    showSuccess(data.mesaj + ' 🎉 Giriş sayfasına yönlendiriliyorsunuz...');
+                    setTimeout(() => {
+                        sessionStorage.removeItem('resetEmail');
+                        window.location.href = '../giris_ekrani/index.html';
+                    }, 2500);
+                } else {
+                    showError(data.mesaj || 'Şifre sıfırlama başarısız.');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Şifreyi Sıfırla';
+                }
+            } catch (err) {
+                showError('Bağlantı hatası: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Şifreyi Sıfırla';
+            }
+        });
+
+        function showError(msg) {
+            document.getElementById('errorMsg').innerHTML = `<div class="error">${msg}</div>`;
+            document.getElementById('successMsg').innerHTML = '';
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('successMsg').innerHTML = `<div class="success">${msg}</div>`;
+            document.getElementById('errorMsg').innerHTML = '';
+        }
+
+        // Kodu otomatik formatla
+        document.getElementById('kod').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+        });
+    </script>
+</body>
+</html>

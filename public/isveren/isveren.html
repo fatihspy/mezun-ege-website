@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="isveren.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>İşveren Paneli - Egemyo Mezun</title>
+<style>
+.bildirim-zil-wrap{position:relative;cursor:pointer;font-size:20px;padding:4px 8px;border-radius:8px;transition:background 0.2s;}
+.bildirim-zil-wrap:hover{background:#f0f4f8;}
+.zil-badge{position:absolute;top:-2px;right:-2px;background:#e53e3e;color:white;border-radius:10px;font-size:10px;font-weight:700;min-width:16px;height:16px;display:none;align-items:center;justify-content:center;padding:0 3px;}
+.bildirim-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:white;border:1px solid #e1e5e9;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000;max-height:360px;overflow-y:auto;}
+.bildirim-panel.show{display:block;}
+.bildirim-item{padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:background 0.15s;}
+.bildirim-item:hover{background:#f8f9fa;}
+.bildirim-item.okunmamis{background:#e8f4fd;}
+.bildirim-tip-ikon{font-size:18px;flex-shrink:0;}
+.bildirim-mesaj{font-size:13px;color:#1a202c;font-weight:500;margin-bottom:3px;}
+.bildirim-tarih{font-size:11px;color:#a0aec0;}
+.bildirim-bos{padding:24px;text-align:center;color:#a0aec0;font-size:13px;}
+</style>
+</head>
+<body>
+    <div class="panel-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <h2>Egemyo</h2>
+                <span>İşveren Paneli</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link aktif" data-sayfa="dashboard">🏠 Ana Sayfa</a>
+                <a href="#" class="nav-link" data-sayfa="ilanlar">📋 İlanlarım</a>
+                <a href="#" class="nav-link" data-sayfa="ilan-ekle">➕ İlan Ekle</a>
+                <a href="#" class="nav-link" data-sayfa="basvurular">👥 Başvurular</a>
+                <a href="#" class="nav-link" data-sayfa="mesajlar">💬 Mesajlar</a>
+                <a href="#" class="nav-link" data-sayfa="ayarlar">⚙️ Hesap</a>
+                <button class="cikis-btn" id="cikisBtn">🚪 Çıkış Yap</button>
+            </nav>
+        </aside>
+
+        <!-- Ana İçerik -->
+        <div class="icerik-alani">
+
+            <!-- Üst Bar -->
+            <header class="top-bar">
+                <div class="top-sol">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <h1 class="sayfa-baslik" id="sayfaBaslik">Ana Sayfa</h1>
+                </div>
+                <div class="top-sag">
+                    <div class="kullanici-bilgi">
+                        <div class="bildirim-zil-wrap" id="bildirimZili" onclick="bildirimPanelAc()">
+            🔔<span class="zil-badge" style="display:none;">0</span>
+            <div class="bildirim-panel" id="bildirimPanel"></div>
+        </div>
+                        <div class="kullanici-avatar" id="topAvatar">İ</div>
+                        <div>
+                            <div class="kullanici-adi" id="topAdi">İşveren</div>
+                            <div class="kullanici-rol">İşveren Hesabı</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ════ DASHBOARD SAYFASI ════ -->
+            <section class="sayfa aktif" id="sayfa-dashboard">
+                <div class="hosgeldin-karti">
+                    <div>
+                        <h2>Hoş geldin, <span id="hosgeldinAdi">İşveren</span>! 👋</h2>
+                        <p>Bugün <span id="bugunTarih"></span></p>
+                    </div>
+                    <button class="btn-birincil" onclick="sayfaGec('ilan-ekle')">+ Hızlı İlan Ekle</button>
+                </div>
+
+                <div class="ozet-kartlar">
+                    <div class="ozet-kart">
+                        <div class="ozet-ikon" style="background:linear-gradient(135deg,#0077b5,#00a0dc)">📋</div>
+                        <div>
+                            <div class="ozet-sayi" id="toplamIlanSayi">0</div>
+                            <div class="ozet-label">Toplam İlan</div>
+                        </div>
+                    </div>
+                    <div class="ozet-kart">
+                        <div class="ozet-ikon" style="background:linear-gradient(135deg,#38a169,#48bb78)">👥</div>
+                        <div>
+                            <div class="ozet-sayi" id="toplamBasvuruSayi">0</div>
+                            <div class="ozet-label">Toplam Başvuru</div>
+                        </div>
+                    </div>
+                    <div class="ozet-kart">
+                        <div class="ozet-ikon" style="background:linear-gradient(135deg,#d97706,#f6ad55)">⏳</div>
+                        <div>
+                            <div class="ozet-sayi" id="bekleyenSayi">0</div>
+                            <div class="ozet-label">Bekleyen Başvuru</div>
+                        </div>
+                    </div>
+                    <div class="ozet-kart">
+                        <div class="ozet-ikon" style="background:linear-gradient(135deg,#7c3aed,#9f7aea)">✅</div>
+                        <div>
+                            <div class="ozet-sayi" id="aktifIlanSayi">0</div>
+                            <div class="ozet-label">Aktif İlan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="iki-kolon">
+                    <div class="panel">
+                        <div class="panel-baslik-row">
+                            <h3>📋 Son İlanlarım</h3>
+                            <button class="link-btn" onclick="sayfaGec('ilanlar')">Tümünü Gör →</button>
+                        </div>
+                        <div id="dashSonIlanlar"><div class="yukleniyor">Yükleniyor...</div></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-baslik-row">
+                            <h3>👥 Son Başvurular</h3>
+                            <button class="link-btn" onclick="sayfaGec('basvurular')">Tümünü Gör →</button>
+                        </div>
+                        <div id="dashSonBasvurular"><div class="yukleniyor">Yükleniyor...</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ════ İLANLARIM SAYFASI ════ -->
+            <section class="sayfa" id="sayfa-ilanlar">
+                <div class="sayfa-ust">
+                    <div>
+                        <h2>📋 İlanlarım</h2>
+                        <p>Yayınladığınız tüm iş ilanları</p>
+                    </div>
+                    <button class="btn-birincil" onclick="sayfaGec('ilan-ekle')">+ Yeni İlan</button>
+                </div>
+
+                <div class="filtre-bar">
+                    <div class="arama-kutu">
+                        <span>🔍</span>
+                        <input type="text" id="ilanArama" placeholder="İlan ara...">
+                    </div>
+                    <select id="ilanDurumFiltre">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="aktif">Aktif</option>
+                        <option value="pasif">Pasif</option>
+                    </select>
+                </div>
+
+                <div id="ilanListesi"></div>
+                <div class="bos-durum" id="ilanBos" style="display:none;">
+                    <div class="bos-ikon">📭</div>
+                    <h3>Henüz ilan yok</h3>
+                    <p>İlk ilanınızı ekleyin!</p>
+                    <button class="btn-birincil" onclick="sayfaGec('ilan-ekle')">İlan Ekle</button>
+                </div>
+            </section>
+
+            <!-- ════ İLAN EKLE SAYFASI ════ -->
+            <section class="sayfa" id="sayfa-ilan-ekle">
+                <div class="sayfa-ust">
+                    <div>
+                        <h2 id="ilanFormBaslik">➕ Yeni İlan Ekle</h2>
+                        <p>Formu doldurun, ilanınız hemen yayına girsin</p>
+                    </div>
+                </div>
+                <div class="form-kart">
+                    <input type="hidden" id="duzenlenenIlanId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Pozisyon Adı *</label>
+                            <input type="text" id="fPozisyon" placeholder="Örn: Frontend Developer">
+                        </div>
+                        <div class="form-group">
+                            <label>Konum</label>
+                            <input type="text" id="fKonum" placeholder="Örn: İzmir / Uzaktan">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select id="fKategori">
+                                <option value="yazilim">Yazılım</option>
+                                <option value="tasarim">Tasarım</option>
+                                <option value="pazarlama">Pazarlama</option>
+                                <option value="finans">Finans</option>
+                                <option value="muhendislik">Mühendislik</option>
+                                <option value="diger">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>İş Türü</label>
+                            <select id="fTur">
+                                <option value="tam">Tam Zamanlı</option>
+                                <option value="yari">Yarı Zamanlı</option>
+                                <option value="staj">Staj</option>
+                                <option value="uzaktan">Uzaktan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Maaş Aralığı</label>
+                            <input type="text" id="fMaas" placeholder="Örn: 20.000 - 30.000 ₺">
+                        </div>
+                        <div class="form-group">
+                            <label>İlan Durumu</label>
+                            <select id="fDurum">
+                                <option value="aktif">Aktif (Yayında)</option>
+                                <option value="pasif">Pasif (Gizle)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group full">
+                        <label>İlan Açıklaması *</label>
+                        <textarea id="fAciklama" rows="4" placeholder="Pozisyon hakkında detaylı bilgi..."></textarea>
+                    </div>
+                    <div class="form-group full">
+                        <label>Aranan Nitelikler</label>
+                        <textarea id="fNitelikler" rows="3" placeholder="Gerekli beceriler ve deneyimler..."></textarea>
+                    </div>
+                    <div class="form-group full">
+                        <label>Son Başvuru Tarihi</label>
+                        <input type="date" id="fSonTarih">
+                    </div>
+                    <div class="form-footer">
+                        <button class="btn-ikincil" id="ilanFormIptal">İptal</button>
+                        <button class="btn-birincil" id="ilanKaydet">🚀 İlanı Yayınla</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ════ BAŞVURULAR SAYFASI ════ -->
+            <section class="sayfa" id="sayfa-basvurular">
+                <div class="sayfa-ust">
+                    <div>
+                        <h2>👥 Gelen Başvurular</h2>
+                        <p>İlanlarınıza gelen tüm başvurular</p>
+                    </div>
+                </div>
+
+                <div class="durum-bantlari">
+                    <div class="bant aktif-bant" data-bf="">
+                        <span class="bant-sayi" id="bfToplam">0</span>
+                        <span class="bant-label">Toplam</span>
+                    </div>
+                    <div class="bant" data-bf="beklemede">
+                        <span class="bant-sayi" id="bfBekleme">0</span>
+                        <span class="bant-label">⏳ Beklemede</span>
+                    </div>
+                    <div class="bant" data-bf="gorusme">
+                        <span class="bant-sayi" id="bfGorusme">0</span>
+                        <span class="bant-label">🤝 Görüşme</span>
+                    </div>
+                    <div class="bant" data-bf="kabul">
+                        <span class="bant-sayi" id="bfKabul">0</span>
+                        <span class="bant-label">✅ Kabul</span>
+                    </div>
+                    <div class="bant" data-bf="reddedildi">
+                        <span class="bant-sayi" id="bfRedd">0</span>
+                        <span class="bant-label">❌ Reddedildi</span>
+                    </div>
+                </div>
+
+                <div id="basvuruListesi"></div>
+                <div class="bos-durum" id="basvuruBos" style="display:none;">
+                    <div class="bos-ikon">👥</div>
+                    <h3>Henüz başvuru yok</h3>
+                    <p>İlanlarınıza başvuru geldikçe burada görünecek.</p>
+                </div>
+            </section>
+
+            <!-- ════ MESAJLAR SAYFASI ════ -->
+            <section class="sayfa" id="sayfa-mesajlar">
+                <div class="sayfa-ust">
+                    <div>
+                        <h2>💬 Mesajlar</h2>
+                        <p class="sayfa-aciklama">Başvuru sahipleriyle iletişim kurun</p>
+                    </div>
+                    <button class="btn-birincil" id="yeniMesajBtn">+ Yeni Mesaj</button>
+                </div>
+                <div class="isv-mesaj-container">
+                    <div class="isv-konusma-liste">
+                        <div style="padding:12px;">
+                            <input type="text" id="isvMesajAra" placeholder="🔍 Kişi ara..."
+                                style="width:100%;padding:9px 12px;border:1px solid #e1e5e9;border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
+                        </div>
+                        <div id="isvKonusmaItems"></div>
+                    </div>
+                    <div class="isv-chat-alan">
+                        <div class="isv-chat-bos" id="isvChatBos">
+                            <div style="font-size:48px;margin-bottom:12px;">💬</div>
+                            <p style="color:#718096;font-size:14px;">Bir konuşma seçin veya yeni mesaj başlatın</p>
+                        </div>
+                        <div id="isvChatAktif" style="display:none;flex-direction:column;height:100%;">
+                            <div class="isv-chat-baslik" id="isvChatBaslik"></div>
+                            <div class="isv-mesajlar-alan" id="isvMesajlarAlan"></div>
+                            <div class="isv-mesaj-gir">
+                                <textarea id="isvMesajInput" placeholder="Mesajınızı yazın..." rows="1"></textarea>
+                                <button id="isvGonderBtn">➤</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ════ HESAP SAYFASI ════ -->
+            <section class="sayfa" id="sayfa-ayarlar">
+                <div class="sayfa-ust">
+                    <div>
+                        <h2>⚙️ Hesap & Şirket Profili</h2>
+                        <p>Şirket ve hesap bilgilerinizi güncelleyin</p>
+                    </div>
+                </div>
+                <div class="form-kart">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ad</label>
+                            <input type="text" id="hAd" placeholder="Adınız">
+                        </div>
+                        <div class="form-group">
+                            <label>Soyad</label>
+                            <input type="text" id="hSoyad" placeholder="Soyadınız">
+                        </div>
+                    </div>
+                    <div class="form-group full">
+                        <label>Şirket Adı</label>
+                        <input type="text" id="hSirket" placeholder="Şirket adınız">
+                    </div>
+                    <div class="form-group full">
+                        <label>Sektör</label>
+                        <select id="hSektor">
+                            <option value="">Sektör seçin</option>
+                            <option>Yazılım & Teknoloji</option>
+                            <option>Üretim & Sanayi</option>
+                            <option>Sağlık</option>
+                            <option>Eğitim</option>
+                            <option>Finans & Bankacılık</option>
+                            <option>Perakende & E-ticaret</option>
+                            <option>İnşaat</option>
+                            <option>Lojistik</option>
+                            <option>Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label>Şirket Hakkında</label>
+                        <textarea id="hSirketAciklama" rows="3" placeholder="Şirketinizi kısaca tanıtın..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Web Sitesi</label>
+                            <input type="text" id="hWebsite" placeholder="www.sirket.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Çalışan Sayısı</label>
+                            <select id="hCalisanSayisi">
+                                <option value="">Seçin</option>
+                                <option>1-10</option>
+                                <option>11-50</option>
+                                <option>51-200</option>
+                                <option>201-500</option>
+                                <option>500+</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group full">
+                        <label>E-posta</label>
+                        <input type="email" id="hEmail" placeholder="E-posta adresiniz">
+                    </div>
+                    <div class="form-group full">
+                        <label>Telefon</label>
+                        <input type="tel" id="hTelefon" placeholder="+90 5xx xxx xx xx">
+                    </div>
+                    <div class="form-footer">
+                        <button class="btn-birincil" id="hesapKaydet">💾 Kaydet</button>
+                    </div>
+                </div>
+
+                <!-- Şifre -->
+                <div class="form-kart" style="margin-top:20px;">
+                    <h3 style="margin-bottom:20px;color:#1a202c;">🔒 Şifre Değiştir</h3>
+                    <div class="form-group full">
+                        <label>Mevcut Şifre</label>
+                        <input type="password" id="hMevcutSifre" placeholder="Mevcut şifreniz">
+                    </div>
+                    <div class="form-group full">
+                        <label>Yeni Şifre</label>
+                        <input type="password" id="hYeniSifre" placeholder="Yeni şifreniz (min. 6 karakter)">
+                    </div>
+                    <div class="form-group full">
+                        <label>Yeni Şifre Tekrar</label>
+                        <input type="password" id="hYeniSifreTekrar" placeholder="Yeni şifrenizi tekrar girin">
+                    </div>
+                    <div class="form-footer">
+                        <button class="btn-birincil" id="sifreKaydet">🔒 Şifreyi Güncelle</button>
+                    </div>
+                </div>
+
+                <!-- Hesap Sil -->
+                <div class="form-kart" style="margin-top:20px;border-color:#feb2b2;background:#fffafa;">
+                    <h3 style="font-size:15px;font-weight:700;color:#c53030;margin-bottom:16px;">🗑️ Hesabı Sil</h3>
+                    <p style="font-size:13px;color:#718096;margin-bottom:16px;">Hesabınızı sildiğinizde tüm ilanlarınız ve başvuru verileri kalıcı olarak silinir.</p>
+                    <div class="form-group full">
+                        <label>Onaylamak için <strong>"HESABIMI SİL"</strong> yazın</label>
+                        <input type="text" id="isverenSilMetin" placeholder="HESABIMI SİL">
+                    </div>
+                    <div class="form-footer">
+                        <button class="btn-birincil" id="isverenHesapSilBtn"
+                            style="background:linear-gradient(135deg,#e53e3e,#c53030);box-shadow:0 4px 12px rgba(229,62,62,0.3);">
+                            🗑️ Hesabımı Sil
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Yeni Mesaj Modal -->
+    <div id="isvYeniMesajModal" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3 style="margin:0;font-size:16px;">💬 Kişi Seç</h3>
+                <button onclick="document.getElementById('isvYeniMesajModal').classList.remove('show')"
+                    style="background:none;border:none;font-size:20px;cursor:pointer;color:#718096;">✕</button>
+            </div>
+            <div id="isvYeniMesajListe" style="max-height:300px;overflow-y:auto;border:1px solid #e1e5e9;border-radius:10px;"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Başvuru Durum Modal -->
+    <div id="bdurum-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Başvuru Durumunu Güncelle</h3>
+                <button class="modal-kapat" id="bdurumKapat">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="basvuruDetayBilgi" style="margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:10px;font-size:13px;"></div>
+                <div class="durum-secenekler">
+                    <button class="durum-sec beklemede" data-durum="beklemede">⏳ Beklemede</button>
+                    <button class="durum-sec gorusme"    data-durum="gorusme">🤝 Görüşmeye Davet Et</button>
+                    <button class="durum-sec kabul"      data-durum="kabul">✅ Kabul Et</button>
+                    <button class="durum-sec reddedildi" data-durum="reddedildi">❌ Reddet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İlan Sil Modal -->
+    <div id="ilan-sil-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon" style="background:linear-gradient(135deg,#e53e3e,#c53030);">🗑️</div></div>
+            <h3>İlanı Sil</h3>
+            <p style="color:#718096;margin-bottom:24px;">Bu ilan ve tüm başvuruları silinecek. Emin misiniz?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn ikincil" id="ilanSilIptal">Vazgeç</button>
+                <button class="modal-btn tehlike" id="ilanSilOnayla">Evet, Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon">🚪</div></div>
+            <h3>Çıkış Yap</h3>
+            <p style="color:#718096;margin-bottom:24px;">Çıkış yapmak istediğinizden emin misiniz?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn ikincil" id="logoutIptal">Hayır</button>
+                <button class="modal-btn birincil" id="logoutOnayla">Evet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="isveren.js"></script>
+</body>
+</html>

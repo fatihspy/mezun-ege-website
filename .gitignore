@@ -1,0 +1,23 @@
+# Ortam değişkenleri — asla commit'leme
+.env
+.env.local
+.env.production
+
+# Bağımlılıklar
+node_modules/
+
+# Log dosyaları
+*.log
+npm-debug.log*
+logs/
+
+# Test & geliştirme araçları
+seed.js
+
+# OS dosyaları
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>Profil - Egemyo Mezun</title>
+
+<style>
+.bildirim-zil-wrap{position:relative;cursor:pointer;font-size:20px;padding:4px 8px;border-radius:8px;transition:background 0.2s;}
+.bildirim-zil-wrap:hover{background:#f0f4f8;}
+.zil-badge{position:absolute;top:-2px;right:-2px;background:#e53e3e;color:white;border-radius:10px;font-size:10px;font-weight:700;min-width:16px;height:16px;display:none;align-items:center;justify-content:center;padding:0 3px;}
+.bildirim-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:white;border:1px solid #e1e5e9;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000;max-height:360px;overflow-y:auto;}
+.bildirim-panel.show{display:block;}
+.bildirim-item{padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:background 0.15s;}
+.bildirim-item:hover{background:#f8f9fa;}
+.bildirim-item.okunmamis{background:#e8f4fd;}
+.bildirim-tip-ikon{font-size:18px;flex-shrink:0;}
+.bildirim-mesaj{font-size:13px;color:#1a202c;font-weight:500;margin-bottom:3px;}
+.bildirim-tarih{font-size:11px;color:#a0aec0;}
+.bildirim-bos{padding:24px;text-align:center;color:#a0aec0;font-size:13px;}
+</style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo"><h2>Egemyo Mezun</h2></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="../dashboard/dashboard.html">Ana Sayfa</a></li>
+                    <li><a href="../profile/profile.html" class="active">Profil</a></li>
+                    <li><a href="../ilanlar/ilanlar.html">İlanlar</a></li>
+                    <li><a href="../mezunlar/mezunlar.html">Mezunlar</a></li>
+                    <li><a href="../mesajlar/mesajlar.html">Mesajlar</a></li>
+                    <li><a href="../basvurular/basvurular.html">Başvurularım</a></li>
+                    <li><a href="../ayarlar/ayarlar.html">Ayarlar</a></li>
+                    <li><button class="logout-btn">Çıkış</button></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <div class="bildirim-zil-wrap" id="bildirimZili" onclick="bildirimPanelAc()">
+                    🔔<span class="zil-badge" style="display:none;">0</span>
+                    <div class="bildirim-panel" id="bildirimPanel"></div>
+                </div>
+                <div class="user-avatar-wrap" id="navAvatarWrap"></div>
+                <span class="user-name" id="navUserName">Kullanıcı</span>
+                <button class="hamburger" id="hamburger">☰</button>
+            </div>
+        </div>
+    </header>
+    <div class="mobil-menu" id="mobilMenu">
+        <a href="../dashboard/dashboard.html">🏠 Ana Sayfa</a>
+        <a href="../profile/profile.html">👤 Profil</a>
+        <a href="../ilanlar/ilanlar.html">📋 İlanlar</a>
+        <a href="../mezunlar/mezunlar.html">👥 Mezunlar</a>
+        <a href="../mesajlar/mesajlar.html">💬 Mesajlar</a>
+        <a href="../basvurular/basvurular.html">📄 Başvurularım</a>
+        <a href="../ayarlar/ayarlar.html">⚙️ Ayarlar</a>
+        <button onclick="document.querySelector('.logout-btn').click()" style="width:100%; padding:12px 24px; text-align:left; background:none; border:none; color:#e53e3e; text-decoration:none; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; display:block;">🚪 Çıkış</button>
+    </div>
+
+
+    <div class="profil-wrap">
+
+        <!-- Banner -->
+        <div class="banner" id="bannerEl">
+            <label class="banner-degistir" for="bannerInput" title="Banner değiştir">🖼️ Banner Değiştir</label>
+            <input type="file" id="bannerInput" accept="image/*" hidden>
+        </div>
+
+        <div class="profil-govde">
+
+            <!-- SOL: Profil Kartı -->
+            <div class="sol-sutun">
+
+                <!-- Profil Kart -->
+                <div class="kart profil-kart">
+                    <div class="avatar-wrap">
+                        <img src="profile_picture.webp" alt="Profil" class="profil-avatar" id="profilAvatar">
+                        <label class="avatar-duzenle" for="avatarInput" title="Fotoğraf değiştir">📷</label>
+                        <input type="file" id="avatarInput" accept="image/*" hidden>
+                    </div>
+                    <div class="profil-temel">
+                        <h1 id="profilAdi">Ad Soyad</h1>
+                        <p class="profil-unvan" id="profilUnvan">Egemyo Mezunu</p>
+                        <div id="profilTipRozeti" class="tip-rozet"></div>
+                        <p class="profil-konum">📍 <span id="profilKonum">İzmir, Türkiye</span></p>
+                    </div>
+                    <!-- Profil Tamamlama -->
+                    <div class="tamamlama-bar">
+                        <div class="tamamlama-ust">
+                            <span>Profil Tamamlama</span>
+                            <span id="tamamlamaYuzde">%0</span>
+                        </div>
+                        <div class="bar-zemin">
+                            <div class="bar-dolu" id="barDolu" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <!-- Aksiyon Butonları -->
+                    <div class="profil-aksiyonlar">
+                        <button class="btn-mesaj" onclick="window.location.href='../mesajlar/mesajlar.html'">💬 Mesaj Gönder</button>
+                        <button class="btn-duzenle" id="profilDuzenleBtn">✏️ Düzenle</button>
+                    </div>
+                </div>
+
+                <!-- İletişim Bilgileri -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>📬 İletişim</h3>
+                        <button class="mini-duzenle" id="iletisimDuzenleBtn">✏️</button>
+                    </div>
+                    <div class="iletisim-liste" id="iletisimListe">
+                        <div class="iletisim-item"><span>📧</span><span id="goIletisimEmail">—</span></div>
+                        <div class="iletisim-item"><span>📱</span><span id="goIletisimTelefon">—</span></div>
+                        <div class="iletisim-item"><span>🔗</span><span id="goIletisimLinkedin">—</span></div>
+                        <div class="iletisim-item"><span>🌐</span><span id="goIletisimWeb">—</span></div>
+                    </div>
+                    <div class="iletisim-form" id="iletisimForm" style="display:none;">
+                        <div class="mini-form-group"><label>E-posta</label><input type="email" id="fIletisimEmail" placeholder="ornek@email.com"></div>
+                        <div class="mini-form-group"><label>Telefon</label><input type="tel" id="fIletisimTelefon" placeholder="+90 5xx xxx xx xx"></div>
+                        <div class="mini-form-group"><label>LinkedIn</label><input type="text" id="fIletisimLinkedin" placeholder="linkedin.com/in/kullanici"></div>
+                        <div class="mini-form-group"><label>Website</label><input type="text" id="fIletisimWeb" placeholder="orneksite.com"></div>
+                        <div class="mini-form-footer">
+                            <button class="btn-iptal" id="iletisimIptal">İptal</button>
+                            <button class="btn-kaydet" id="iletisimKaydet">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İstatistikler -->
+                <div class="kart">
+                    <h3>📊 İstatistikler</h3>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <span class="stat-sayi" id="statBasvuru">0</span>
+                            <span class="stat-label">Başvuru</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-sayi" id="statMesaj">0</span>
+                            <span class="stat-label">Mesaj</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-sayi" id="statIlan">0</span>
+                            <span class="stat-label">Favori İlan</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SAĞ: Detay Bölümleri -->
+            <div class="sag-sutun">
+
+                <!-- Hakkımda -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>👤 Hakkımda</h3>
+                        <button class="mini-duzenle" id="hakkimdaDuzenleBtn">✏️</button>
+                    </div>
+                    <p class="hakkimda-metin" id="goHakkimda">Henüz bir tanıtım yazısı eklenmedi.</p>
+                    <div class="inline-form" id="hakkimdaForm" style="display:none;">
+                        <textarea id="fHakkimda" rows="4" placeholder="Kendinizden kısaca bahsedin..."></textarea>
+                        <div class="mini-form-footer">
+                            <button class="btn-iptal" id="hakkimdaIptal">İptal</button>
+                            <button class="btn-kaydet" id="hakkimdaKaydet">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eğitim -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>🎓 Eğitim</h3>
+                        <button class="mini-duzenle" id="egitimEkleBtn">+ Ekle</button>
+                    </div>
+                    <div id="egitimListesi"></div>
+                    <div class="inline-form" id="egitimForm" style="display:none;">
+                        <div class="form-row-2">
+                            <div class="mini-form-group"><label>Okul Adı *</label><input type="text" id="fEgitimOkul" placeholder="Egemyo Meslek YO"></div>
+                            <div class="mini-form-group"><label>Bölüm</label><input type="text" id="fEgitimBolum" placeholder="Bilgisayar Programcılığı"></div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="mini-form-group"><label>Başlangıç</label><input type="text" id="fEgitimBaslangic" placeholder="2021"></div>
+                            <div class="mini-form-group"><label>Bitiş</label><input type="text" id="fEgitimBitis" placeholder="2023 / Devam Ediyor"></div>
+                        </div>
+                        <div class="mini-form-group"><label>Açıklama</label><textarea id="fEgitimAciklama" rows="2" placeholder="Bölüm hakkında kısa bilgi..."></textarea></div>
+                        <div class="mini-form-footer">
+                            <button class="btn-iptal" id="egitimIptal">İptal</button>
+                            <button class="btn-kaydet" id="egitimKaydet">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İş Deneyimi -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>💼 İş Deneyimi</h3>
+                        <button class="mini-duzenle" id="deneyimEkleBtn">+ Ekle</button>
+                    </div>
+                    <div id="deneyimListesi"></div>
+                    <div class="inline-form" id="deneyimForm" style="display:none;">
+                        <div class="form-row-2">
+                            <div class="mini-form-group"><label>Pozisyon *</label><input type="text" id="fDeneyimPozisyon" placeholder="Frontend Developer"></div>
+                            <div class="mini-form-group"><label>Şirket *</label><input type="text" id="fDeneyimSirket" placeholder="Tech A.Ş."></div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="mini-form-group"><label>Başlangıç</label><input type="text" id="fDeneyimBaslangic" placeholder="Oca 2023"></div>
+                            <div class="mini-form-group"><label>Bitiş</label><input type="text" id="fDeneyimBitis" placeholder="Günümüz"></div>
+                        </div>
+                        <div class="mini-form-group"><label>Açıklama</label><textarea id="fDeneyimAciklama" rows="2" placeholder="Yaptığınız işler..."></textarea></div>
+                        <div class="mini-form-footer">
+                            <button class="btn-iptal" id="deneyimIptal">İptal</button>
+                            <button class="btn-kaydet" id="deneyimKaydet">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Beceriler -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>⚡ Beceriler</h3>
+                        <button class="mini-duzenle" id="beceriDuzenleBtn">✏️</button>
+                    </div>
+                    <div class="beceri-listesi" id="goBeceriler"></div>
+                    <div class="inline-form" id="beceriForm" style="display:none;">
+                        <div id="beceriDuzenAlan"></div>
+                        <div class="mini-form-footer" style="margin-top:12px;">
+                            <button class="btn-iptal" id="beceriIptal">Kapat</button>
+                            <button class="btn-kaydet" id="beceriKaydet" style="display:none;">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yabancı Diller -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>🌍 Yabancı Diller</h3>
+                        <button class="mini-duzenle" id="dilEkleBtn">+ Ekle</button>
+                    </div>
+                    <div id="dilListesi"></div>
+                    <div class="inline-form" id="dilForm" style="display:none;">
+                        <div class="form-row-2">
+                            <div class="mini-form-group">
+                                <label>Dil</label>
+                                <select id="fDilAd">
+                                    <option value="" disabled selected>Seçin</option>
+                                    <option>İngilizce</option><option>Almanca</option>
+                                    <option>Fransızca</option><option>İspanyolca</option>
+                                    <option>İtalyanca</option><option>Rusça</option>
+                                    <option>Arapça</option><option>Çince</option>
+                                    <option>Japonca</option><option>Diğer</option>
+                                </select>
+                            </div>
+                            <div class="mini-form-group">
+                                <label>Seviye</label>
+                                <select id="fDilSeviye">
+                                    <option value="1">1 — Başlangıç (A1)</option>
+                                    <option value="2">2 — Temel (A2-B1)</option>
+                                    <option value="3" selected>3 — Orta (B2)</option>
+                                    <option value="4">4 — İyi (C1)</option>
+                                    <option value="5">5 — Akıcı (C2)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mini-form-footer">
+                            <button class="btn-iptal" id="dilIptal">İptal</button>
+                            <button class="btn-kaydet" id="dilKaydet">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sertifikalar -->
+                <div class="kart">
+                    <div class="kart-baslik-row">
+                        <h3>🏅 Sertifikalar</h3>
+                        <button class="mini-duzenle" id="sertifikaEkleBtn">+ Ekle</button>
+                    </div>
+                    <div id="sertifikaListesi"></div>
+                    <div class="inline-form" id="sertifikaForm" style="display:none;">
+                        <div class="form-row-2">
+                            <div class="mini-form-group"><label>Sertifika Adı *</label><input type="text" id="fSertifikaAd" placeholder="JavaScript Sertifikası"></div>
+                            <div class="mini-form-group"><label>Kurum</label><input type="text" id="fSertifikaKurum" placeholder="Udemy, Coursera..."></div>
+                        </div>
+                        <div class="mini-form-group"><label>Tarih</label><input type="text" id="fSertifikaTarih" placeholder="Ocak 2024"></div>
+                        <div class="mini-form-footer">
+                            <button class="btn-iptal" id="sertifikaIptal">İptal</button>
+                            <button class="btn-kaydet" id="sertifikaKaydet">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Profil Düzenle Modal -->
+    <div id="profil-modal" class="modal">
+        <div class="modal-content modal-buyuk">
+            <div class="modal-header">
+                <h3>✏️ Profili Düzenle</h3>
+                <button class="modal-kapat" id="profilModalKapat">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row-2">
+                    <div class="mini-form-group"><label>Ad *</label><input type="text" id="fProfilAd" placeholder="Adınız"></div>
+                    <div class="mini-form-group"><label>Soyad *</label><input type="text" id="fProfilSoyad" placeholder="Soyadınız"></div>
+                </div>
+                <div class="mini-form-group"><label>Unvan / Headline</label><input type="text" id="fProfilUnvan" placeholder="Örn: Frontend Developer | Egemyo Mezunu"></div>
+                <div class="mini-form-group"><label>Konum</label><input type="text" id="fProfilKonum" placeholder="İzmir, Türkiye"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-iptal" id="profilModalIptal">İptal</button>
+                <button class="btn-kaydet" id="profilModalKaydet">💾 Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Logout Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon">🚪</div></div>
+            <h3>Çıkış Yap</h3>
+            <p>Çıkış yapmak istediğinizden emin misiniz?</p>
+            <div class="modal-buttons">
+                <button id="confirm-logout" class="modal-btn confirm">Evet</button>
+                <button id="cancel-logout" class="modal-btn cancel">Hayır</button>
+            </div>
+        </div>
+    </div>
+    <div id="success-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon" style="background:linear-gradient(135deg,#48bb78,#38a169);box-shadow:0 8px 25px rgba(56,161,105,0.3);">✅</div></div>
+            <h3>Çıkış Başarılı</h3>
+            <p>Giriş ekranına yönlendiriliyorsunuz...</p>
+            <div class="modal-buttons">
+                <button id="ok-success" class="modal-btn confirm">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
