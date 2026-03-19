@@ -8,10 +8,12 @@ const path       = require('path');
 const app = express();
 
 // ── Güvenlik başlıkları ───────────────────────────────
-app.use(helmet({
-  contentSecurityPolicy: false, // Statik HTML sayfaları için kapatıldı
-  crossOriginEmbedderPolicy: false
-}));
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+  }));
+}
 
 // ── CORS ──────────────────────────────────────────────
 const izinliOriginler = process.env.ALLOWED_ORIGIN

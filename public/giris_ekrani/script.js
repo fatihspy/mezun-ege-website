@@ -55,7 +55,7 @@ window.sekmeGec = function(rol) {
 
 // ── Form Türü Geçişi (Giriş ↔ Kayıt) ──────────────────
 window.formTuruGec = function(turanew) {
-    const girisForm = document.getElementById('girisFormu') || document.getElementById('adim-mail')?.closest('.giris-kart');
+    const girisForm = document.getElementById('girisFormu');
     const kayitForm = document.getElementById('kayitFormu');
     const sekmeGiris = document.getElementById('sekme-giris');
     const sekmeKayit = document.getElementById('sekme-kayit');
@@ -63,9 +63,13 @@ window.formTuruGec = function(turanew) {
 
     if (turanew === 'giris') {
         // Giriş formunu göster
-        document.querySelectorAll('.form-container.aktif').forEach(el => el.classList.remove('aktif'));
         if (girisForm) girisForm.style.display = 'block';
         kayitForm.style.display = 'none';
+        
+        // Sadece giriş formu adımlarını sıfırla
+        girisForm.querySelectorAll('.giris-adim').forEach(el => el.classList.remove('aktif'));
+        const adimMail = document.getElementById('adim-mail');
+        if (adimMail) adimMail.classList.add('aktif');
         
         sekmeGiris.classList.add('aktif');
         sekmeKayit.classList.remove('aktif');
@@ -78,9 +82,13 @@ window.formTuruGec = function(turanew) {
         
     } else if (turanew === 'kayit') {
         // Kayıt formunu göster
-        document.querySelectorAll('#adim-mail, #adim-kod, #adim-sifre-kod, #adim-sifre-belirle').forEach(el => el.classList.remove('aktif'));
         if (girisForm) girisForm.style.display = 'none';
         kayitForm.style.display = 'block';
+        
+        // Kayıt formu adımını aktif yap
+        kayitForm.querySelectorAll('.giris-adim').forEach(el => el.classList.remove('aktif'));
+        const adimKayitEmail = document.getElementById('adim-kayit-email');
+        if (adimKayitEmail) adimKayitEmail.classList.add('aktif');
         
         sekmeKayit.classList.add('aktif');
         sekmeGiris.classList.remove('aktif');
@@ -109,27 +117,6 @@ window.kayitSifreyiToggleEt = function(inputId) {
         input.type = 'text';
     } else {
         input.type = 'password';
-    }
-};
-
-// ── Sekme Geçişi ──────────────────────────────────────
-window.sekmeGec = function(rol) {
-    aktifRol = rol;
-    document.querySelectorAll('.sekme').forEach(s => s.classList.remove('aktif'));
-    document.getElementById(`sekme-${rol}`).classList.add('aktif');
-
-    if (rol === 'mezun') {
-        document.getElementById('girisBaslik').textContent  = 'Hoş Geldin!';
-        document.getElementById('girisSloganı').textContent = 'Okul mailinizle güvenli giriş yapın';
-        document.getElementById('mailLabel').textContent    = 'Okul E-posta Adresi';
-        document.getElementById('mailInput').placeholder   = 'ad.soyad@ogrenci.ege.edu.tr';
-        document.getElementById('mailIpucu').textContent   = '@ogrenci.ege.edu.tr uzantılı okul mailinizi girin';
-    } else {
-        document.getElementById('girisBaslik').textContent  = 'İşveren Girişi';
-        document.getElementById('girisSloganı').textContent = 'Kurumsal mailinizle giriş yapın';
-        document.getElementById('mailLabel').textContent    = 'Kurumsal E-posta';
-        document.getElementById('mailInput').placeholder   = 'ad@sirket.com';
-        document.getElementById('mailIpucu').textContent   = 'Herhangi bir kurumsal mail adresi kullanabilirsiniz';
     }
 };
 
