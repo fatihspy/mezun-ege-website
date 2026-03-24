@@ -28,26 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('yeni-mesaj-modal')?.addEventListener('click', (e) => {
         if (e.target.id === 'yeni-mesaj-modal') yeniMesajModalKapat();
     });
-    
-    // Mezunlar sayfasından gelen kişiyi kontrol et
-    const secilenMezun = sessionStorage.getItem('secilenMezunMesaj');
-    if (secilenMezun) {
-        try {
-            const mezun = JSON.parse(secilenMezun);
-            sessionStorage.removeItem('secilenMezunMesaj');
-            
-            // Modal'ı aç ve kişiyi seç
-            yeniMesajModalAc();
-            setTimeout(() => {
-                window.seciliKisId = mezun._id;
-                window.seciliKisAdi = `${mezun.isim} ${mezun.soyisim}`;
-                document.getElementById('kisiAramaInput').value = window.seciliKisAdi;
-                document.getElementById('ilkMesaj').focus();
-            }, 100);
-        } catch (err) {
-            console.error('Seçilen mezun parsing hatası:', err);
-        }
-    }
 });
 
 // ── KONUŞMALARI YÜKLE ───────────────────────────────────────────────────

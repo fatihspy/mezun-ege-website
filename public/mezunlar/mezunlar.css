@@ -1,6 +1,8 @@
 /* ── Navbar Standart ─────────────────────────────────── */
 .main-header {
     background: white;
+    max-width: 1200px;
+    margin: 0 auto;
     border-bottom: 1px solid #e1e5e9;
     position: sticky; top: 0; z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -321,7 +323,7 @@ body { background:#f0f4f8; min-height:100vh; color:#333; }
 body { background: #f0f4f8; }
 
 .dashboard-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     min-height: calc(100vh - 60px);
 }
@@ -354,4 +356,23 @@ body { background: #f0f4f8; }
 @media (max-width: 768px) {
     .sidebar { display: none; }
     .main-content { padding: 16px; }
+}
+
+/* ── Hamburger Menü (Desktop'ta Gizli) ──────────────── */
+.hamburger {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #555;
+    padding: 4px;
+    flex-shrink: 0;
+}
+.hamburger:hover {
+    color: #0077b5;
+}
+
+@media (max-width: 960px) {
+    .hamburger { display: block; }
 }

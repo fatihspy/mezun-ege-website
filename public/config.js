@@ -39,8 +39,36 @@ function kullaniciAdiGetir() {
     const k  = JSON.parse(localStorage.getItem('kullanici')  || '{}');
     const pd = JSON.parse(localStorage.getItem('profilDetay')|| '{}');
     const pf = JSON.parse(localStorage.getItem('profilDoldurma') || '{}');
-    const isim  = k.isim   || pd.ad    || pf.isim   || '';
-    const soyad = k.soyisim|| pd.soyad || pf.soyisim|| '';
+
+    const tamAdKaynak = (
+        k.adSoyad || k.tamAd || k.name ||
+        pd.adSoyad || pd.tamAd || pd.name ||
+        pf.adSoyad || pf.tamAd || pf.name ||
+        ''
+    ).toString().trim();
+
+    const adParca = tamAdKaynak ? tamAdKaynak.split(/\s+/).filter(Boolean) : [];
+    const tamAddanIsim = adParca.length ? adParca[0] : '';
+    const tamAddanSoyad = adParca.length > 1 ? adParca.slice(1).join(' ') : '';
+
+    // Farkli sayfalarda ve eski kayitlarda alan adlari degisebildigi icin
+    // isim/soyisim'i tum olasi anahtarlardan topla.
+    const isim = (
+        k.isim || k.ad ||
+        pd.isim || pd.ad ||
+        pf.isim || pf.ad ||
+        tamAddanIsim ||
+        ''
+    ).toString().trim();
+
+    const soyad = (
+        k.soyisim || k.soyad ||
+        pd.soyisim || pd.soyad ||
+        pf.soyisim || pf.soyad ||
+        tamAddanSoyad ||
+        ''
+    ).toString().trim();
+
     return { isim, soyad, adSoyad: isim ? `${isim} ${soyad}`.trim() : '' };
 }
 

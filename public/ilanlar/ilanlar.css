@@ -1,6 +1,8 @@
 /* ── Navbar Standart ─────────────────────────────────── */
 .main-header {
     background: white;
+    max-width: 1200px;
+    margin: 0 auto;
     border-bottom: 1px solid #e1e5e9;
     position: sticky; top: 0; z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -99,6 +101,8 @@ body {
 }
 
 .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
     background: white;
     min-height: 100vh;
 }

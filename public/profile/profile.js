@@ -104,7 +104,9 @@ document.getElementById('bannerInput').addEventListener('change', function() {
 function temelBilgileriYukle() {
     const pd = profilGetir();
     const ad = kullanici.isim ? `${kullanici.isim} ${kullanici.soyisim || ''}`.trim() : (profilData.isim ? `${profilData.isim} ${profilData.soyisim || ''}`.trim() : 'Ad Soyad');
-    document.getElementById('profilAdi').textContent   = pd.ad     || ad;
+    // pd.isim ve pd.soyisim'i de kontrol et (backend'den gelen veri)
+    const adDisplay = (pd.isim && pd.soyisim) ? `${pd.isim} ${pd.soyisim}`.trim() : ad;
+    document.getElementById('profilAdi').textContent   = adDisplay;
     document.getElementById('profilUnvan').textContent = pd.unvan  || (profilData.bolum ? `${profilData.bolum} Mezunu` : 'Egemyo Mezunu');
     document.getElementById('profilKonum').textContent = pd.konum  || 'İzmir, Türkiye';
 
@@ -316,26 +318,37 @@ const seviyeLabels = { 1:'Başlangıç', 2:'Temel', 3:'Orta', 4:'İyi', 5:'Uzman
 function beceriYukle() {
     const pd = profilGetir();
     const el = document.getElementById('goBeceriler');
-    const detay = pd.becerilerDetay || [];
-    const duzListe = pd.beceriler || [];
-
-    if (!detay.length && !duzListe.length) {
-        el.innerHTML = '<span class="bos-alan">Henüz beceri eklenmedi.</span>'; return;
+    
+    // becerilerDetay varsa bunu kullan, yoksa beceriler'den oluştur
+    let beceriler = [];
+    if (pd.becerilerDetay && Array.isArray(pd.becerilerDetay)) {
+        beceriler = pd.becerilerDetay;
+    } else if (pd.beceriler && Array.isArray(pd.beceriler) && pd.beceriler.length > 0) {
+        // beceriler'i normalize et - obje veya string olabilir
+        beceriler = pd.beceriler.map(b => {
+            if (typeof b === 'object' && b !== null) {
+                return { ad: b.ad || String(b), seviye: b.seviye || 3 };
+            } else {
+                return { ad: String(b), seviye: 3 };
+            }
+        });
     }
 
-    if (detay.length) {
-        el.innerHTML = detay.map(b => `
-            <div class="beceri-seviyeli">
-                <span class="beceri-tag">${b.ad}</span>
-                <div class="beceri-bar-wrap">
-                    ${[1,2,3,4,5].map(n => `<div class="beceri-bar-daire ${n <= b.seviye ? 'dolu' : ''}"></div>`).join('')}
-                    <span class="beceri-seviye-yazi">${seviyeLabels[b.seviye] || ''}</span>
-                </div>
+    if (!beceriler.length) {
+        el.innerHTML = '<span class="bos-alan">Henüz beceri eklenmedi.</span>'; 
+        return;
+    }
+
+    // Her beceriyi görüntüle
+    el.innerHTML = beceriler.map(b => `
+        <div class="beceri-seviyeli">
+            <span class="beceri-tag">${b.ad || 'Beceri'}</span>
+            <div class="beceri-bar-wrap">
+                ${[1,2,3,4,5].map(n => `<div class="beceri-bar-daire ${n <= (b.seviye || 3) ? 'dolu' : ''}"></div>`).join('')}
+                <span class="beceri-seviye-yazi">${seviyeLabels[b.seviye || 3] || ''}</span>
             </div>
-        `).join('');
-    } else {
-        el.innerHTML = duzListe.map(b => `<span class="beceri-tag">${b}</span>`).join('');
-    }
+        </div>
+    `).join('');
 }
 
 // Beceri düzenleme — inline liste sistemi
@@ -345,7 +358,22 @@ document.getElementById('beceriDuzenleBtn').addEventListener('click', () => {
     if (profilBeceriDuzenMod) return;
     profilBeceriDuzenMod = true;
     const pd = profilGetir();
-    const detay = pd.becerilerDetay || (pd.beceriler || []).map(ad => ({ ad, seviye: 3 }));
+    
+    // becerilerDetay varsa onu kullan, yoksa beceriler'den oluştur
+    let detay;
+    if (pd.becerilerDetay && Array.isArray(pd.becerilerDetay)) {
+        detay = pd.becerilerDetay;
+    } else if (pd.beceriler && Array.isArray(pd.beceriler)) {
+        detay = pd.beceriler.map(b => {
+            if (typeof b === 'object' && b !== null && b.ad) {
+                return { ad: b.ad, seviye: b.seviye || 3 };
+            } else {
+                return { ad: String(b), seviye: 3 };
+            }
+        });
+    } else {
+        detay = [];
+    }
 
     // Düzenleme alanını kullan (çift ID sorununu önlemek için)
     const el = document.getElementById('beceriDuzenAlan');
@@ -384,11 +412,30 @@ document.getElementById('beceriDuzenleBtn').addEventListener('click', () => {
 
 window.beceriSeviyeDegistir = function(i, seviye) {
     const pd = profilGetir();
-    const detay = pd.becerilerDetay || (pd.beceriler || []).map(ad => ({ ad, seviye: 3 }));
+    
+    // detay normalize et
+    let detay;
+    if (pd.becerilerDetay && Array.isArray(pd.becerilerDetay)) {
+        detay = [...pd.becerilerDetay];
+    } else if (pd.beceriler && Array.isArray(pd.beceriler)) {
+        detay = pd.beceriler.map(b => {
+            if (typeof b === 'object' && b !== null && b.ad) {
+                return { ad: b.ad, seviye: b.seviye || 3 };
+            } else {
+                return { ad: String(b), seviye: 3 };
+            }
+        });
+    } else {
+        return;
+    }
+    
     detay[i].seviye = seviye;
     pd.becerilerDetay = detay;
-    pd.beceriler = detay.map(b => b.ad);
+    
+    // Kaydedilecek veriyi normal beceriler'e çevir
+    pd.beceriler = detay.map(b => (typeof b === 'object' ? b.ad : b));
     profilKaydet(pd);
+    
     // Butonları güncelle
     const satir = document.querySelector(`.beceri-duzen-satir[data-index="${i}"]`);
     if (satir) {
@@ -403,11 +450,30 @@ window.beceriSeviyeDegistir = function(i, seviye) {
 
 window.profilBeceriSil = function(i) {
     const pd = profilGetir();
-    const detay = pd.becerilerDetay || (pd.beceriler || []).map(ad => ({ ad, seviye: 3 }));
+    
+    // detay normalize et
+    let detay;
+    if (pd.becerilerDetay && Array.isArray(pd.becerilerDetay)) {
+        detay = [...pd.becerilerDetay];
+    } else if (pd.beceriler && Array.isArray(pd.beceriler)) {
+        detay = pd.beceriler.map(b => {
+            if (typeof b === 'object' && b !== null && b.ad) {
+                return { ad: b.ad, seviye: b.seviye || 3 };
+            } else {
+                return { ad: String(b), seviye: 3 };
+            }
+        });
+    } else {
+        return;
+    }
+    
     detay.splice(i, 1);
     pd.becerilerDetay = detay;
-    pd.beceriler = detay.map(b => b.ad);
+    
+    // Kaydedilecek veriyi normal beceriler'e çevir
+    pd.beceriler = detay.map(b => (typeof b === 'object' ? b.ad : b));
     profilKaydet(pd);
+    
     // Sayfayı yeniden render et
     document.getElementById('beceriDuzenleBtn').style.display = '';
     profilBeceriDuzenMod = false;
@@ -563,6 +629,16 @@ function istatistikYukle() {
 // ── Sayfa Yüklenirken Profil Bilgilerini API'den Al ──
 document.addEventListener('DOMContentLoaded', async () => {
     await profilGetirAPI();
+    // Sonra temel bilgileri yükle
+    temelBilgileriYukle();
+    iletisimYukle();
+    hakkimdaYukle();
+    egitimYukle();
+    deneyimYukle();
+    beceriYukle();
+    dilYukle();
+    sertifikaYukle();
+    istatistikYukle();
 });
 
 
@@ -580,12 +656,4 @@ window.addEventListener('click', (e) => {
 });
 
 // ── İlk Yükleme ───────────────────────────────────────
-temelBilgileriYukle();
-iletisimYukle();
-hakkimdaYukle();
-egitimYukle();
-deneyimYukle();
-beceriYukle();
-dilYukle();
-sertifikaYukle();
-istatistikYukle();
+// (Şimdi DOMContentLoaded içinde yapılıyor)

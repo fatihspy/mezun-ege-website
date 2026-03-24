@@ -1,4 +1,14 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
+
+const debugLogPath = path.join(__dirname, '../mail-debug.log');
+
+function debugLog(msg) {
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(debugLogPath, `[${timestamp}] ${msg}\n`);
+    console.log(msg);
+}
 
 const transporter = nodemailer.createTransport({
     host:   process.env.MAIL_HOST,
@@ -7,6 +17,15 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS
+    }
+});
+
+// Transporter'ı test et
+transporter.verify((err, success) => {
+    if (err) {
+        debugLog('❌ Mail konfigürasyonu hatalı: ' + err.message);
+    } else {
+        debugLog('✅ Mail servisi bağlantısı başarılı');
     }
 });
 
@@ -120,10 +139,12 @@ async function emailVerificationCodeGonder(email, kod) {
 }
 
 async function passwordResetCodeGonder(email, kod) {
-    await transporter.sendMail({
-        from: process.env.MAIL_FROM,
-        to: email,
-        subject: 'Egemyo Mezun — Şifre Sıfırlama Kodu',
+    try {
+        debugLog('📧 Şifre sıfırlama maili gönderiliyor: ' + email);
+        await transporter.sendMail({
+            from: process.env.MAIL_FROM,
+            to: email,
+            subject: 'Egemyo Mezun — Şifre Sıfırlama Kodu',
         html: `
             <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f8f9fa;border-radius:16px;">
                 <div style="text-align:center;margin-bottom:24px;">
@@ -153,7 +174,12 @@ async function passwordResetCodeGonder(email, kod) {
                 </p>
             </div>
         `
-    });
+        });
+        debugLog('✅ Şifre sıfırlama maili başarıyla gönderildi: ' + email);
+    } catch (err) {
+        debugLog('❌ Şifre sıfırlama maili gönderilemedi: ' + err.message);
+        throw err;
+    }
 }
 
 module.exports = { dogrulamaKoduGonder, sifreBelirlemeKoduGonder, emailVerificationCodeGonder, passwordResetCodeGonder };

@@ -202,26 +202,24 @@ window.mezunDetayAc = async function(id) {
 // ── Mesaj Gönder ─────────────────────────────────────
 window.mezunaMesajGonder = function(id) {
     const mezunlar = mezunlariGetir();
-    const m = mezunlar.find(x => x.id == id);
+    const m = mezunlar.find(x => x.id == id || x._id == id);
     if (!m) return;
 
-    const tam = `${m.ad} ${m.soyad}`.trim();
-    const konusmalar = JSON.parse(localStorage.getItem('konusmalar') || '[]');
+    // Seçilen mezunu sessionStorage'e kaydet (sayfayı açmadan önce)
+    const secilenMezun = {
+        _id: m._id || m.id,
+        isim: m.ad || m.isim || '',
+        soyisim: m.soyad || m.soyisim || '',
+        email: m.email || '',
+        rol: m.rol || m.tip === 'ogrenci' ? 'Öğrenci' : 'Mezun'
+    };
+    sessionStorage.setItem('secilenMezunMesaj', JSON.stringify(secilenMezun));
 
-    // Zaten konuşma var mı?
-    let konusma = konusmalar.find(k => (k.kisi === tam || k.email === m.email));
-    if (!konusma) {
-        const yeniId = konusmalar.length ? Math.max(...konusmalar.filter(k => typeof k.id === 'number').map(k => k.id), 0) + 1 : 1;
-        konusma = {
-            id: yeniId, kisi: tam, rol: m.tip === 'ogrenci' ? 'Öğrenci' : 'Mezun',
-            email: m.email, mesajlar: [], okunmadi: 0
-        };
-        konusmalar.unshift(konusma);
-        localStorage.setItem('konusmalar', JSON.stringify(konusmalar));
-    }
-
+    // Modal'ı kapat
     document.getElementById('mezunModal').classList.remove('show');
-    window.location.href = `../mesajlar/mesajlar.html`;
+    
+    // Mesajlar sayfasına yönlendir
+    window.location.href = `../mesajlar/mesajlar.html?mesaj=${m._id || m.id}`;
 };
 
 // ── Modal Kapat ───────────────────────────────────────

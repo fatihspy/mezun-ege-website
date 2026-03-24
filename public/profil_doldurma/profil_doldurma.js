@@ -386,6 +386,13 @@ document.getElementById('tamamlaBtn').addEventListener('click', async () => {
         const result = await response.json();
 
         if (result.basarili) {
+            // ✅ localStorage'ı güncellenmiş kullanıcı bilgisi ile update et
+            if (result.profil) {
+                localStorage.setItem('kullanici', JSON.stringify(result.profil));
+            } else if (result.kullanici) {
+                localStorage.setItem('kullanici', JSON.stringify(result.kullanici));
+            }
+            
             localStorage.setItem('profilTamamlandi', 'true');
 
             // Bitti ekranını tipe göre özelleştir

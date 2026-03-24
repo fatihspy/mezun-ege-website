@@ -298,7 +298,7 @@ router.post('/profil-tamamla', authMiddleware, async (req, res, next) => {
         const telefonCheck = validator.validatePhone(veri.iletisim?.telefon, false);
         if (!telefonCheck.valid) return res.status(400).json({ basarili: false, mesaj: telefonCheck.error });
         
-        await User.findByIdAndUpdate(req.kullanici._id, {
+        const kullanici = await User.findByIdAndUpdate(req.kullanici._id, {
             profilTamamlandi: true,
             isim: validator.sanitizeString(veri.ad), 
             soyisim: validator.sanitizeString(veri.soyad),
@@ -317,7 +317,18 @@ router.post('/profil-tamamla', authMiddleware, async (req, res, next) => {
             beceriler: veri.becerilerDetay || [], 
             diller: veri.diller || []
         }, { new: true, runValidators: false });
-        res.json({ basarili: true, mesaj: 'Profil başarıyla kaydedildi.' });
+        res.json({ 
+            basarili: true, 
+            mesaj: 'Profil başarıyla kaydedildi.',
+            kullanici: {
+                id: kullanici._id, 
+                email: kullanici.email, 
+                rol: kullanici.rol,
+                isim: kullanici.isim, 
+                soyisim: kullanici.soyisim, 
+                profilTamamlandi: kullanici.profilTamamlandi
+            }
+        });
     } catch (err) { next(err); }
 });
 
@@ -560,6 +571,7 @@ router.post('/resend-verification-code', authMiddleware, async (req, res, next) 
 router.post('/forgot-password', girisLimiter, async (req, res, next) => {
     try {
         const { email } = req.body;
+        console.log('🟢 /forgot-password çağrısı alındı. Email:', email);
 
         const emailCheck = validator.validateEmail(email);
         if (!emailCheck.valid) {
@@ -568,6 +580,7 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
 
         const emailTemiz = email.toLowerCase().trim();
         const kullanici = await User.findOne({ email: emailTemiz });
+        console.log('🟢 Kullanıcı bulundu mu?', !!kullanici);
         
         if (!kullanici) {
             // Güvenlik: var olmayan email için de başarılı dön
@@ -580,16 +593,21 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
         // Şifre sıfırla kodu oluştur
         const resetCode = generateVerificationCode();
         const resetExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 dakika
+        console.log('🟢 Reset kodu oluşturuldu:', resetCode);
 
         kullanici.passwordResetCode = resetCode;
         kullanici.passwordResetCodeExpiry = resetExpiry;
         await kullanici.save();
+        console.log('🟢 Kullanıcı kaydedildi');
 
         // Email gönder
         try {
+            console.log('🟢 Mail gönderme başladı...');
             await passwordResetCodeGonder(emailTemiz, resetCode);
+            console.log('🟢 Mail gönderme tamamlandı');
         } catch (emailErr) {
-            console.error('Email gönderme hatası:', emailErr);
+            console.error('❌ Email gönderme hatası:', emailErr.message);
+            console.error('Detaylı hata:', emailErr);
             console.log('\n🔐 ŞİFRE SIFIRLA KODU [' + emailTemiz + ']: ' + resetCode + '\n');
         }
 
@@ -597,7 +615,10 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
             basarili: true,
             mesaj: 'Şifre sıfırlama kodu gönderildi. Email adresinizi kontrol edin.'
         });
-    } catch (err) { next(err); }
+    } catch (err) { 
+        console.error('🔴 forgot-password error:', err.message);
+        next(err); 
+    }
 });
 
 // POST /api/auth/reset-password — Yeni şifre belirle

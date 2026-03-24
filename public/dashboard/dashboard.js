@@ -21,8 +21,41 @@ async function getProfilData() {
 // ── Yardımcı Fonksiyon: İsim Getirme ──────────────────
 async function kullaniciAdiGetir() {
     const profil = await getProfilData();
-    const isim = profil.isim || 'Kullanıcı';
-    const soyad = profil.soyisim || '';
+
+    const k  = JSON.parse(localStorage.getItem('kullanici') || '{}');
+    const pd = JSON.parse(localStorage.getItem('profilDetay') || '{}');
+    const pf = JSON.parse(localStorage.getItem('profilDoldurma') || '{}');
+
+    const tamAdKaynak = (
+        profil.adSoyad || profil.tamAd || profil.name ||
+        k.adSoyad || k.tamAd || k.name ||
+        pd.adSoyad || pd.tamAd || pd.name ||
+        pf.adSoyad || pf.tamAd || pf.name ||
+        ''
+    ).toString().trim();
+
+    const adParca = tamAdKaynak ? tamAdKaynak.split(/\s+/).filter(Boolean) : [];
+    const tamAddanIsim = adParca.length ? adParca[0] : '';
+    const tamAddanSoyad = adParca.length > 1 ? adParca.slice(1).join(' ') : '';
+
+    const isim = (
+        profil.isim || profil.ad ||
+        k.isim || k.ad ||
+        pd.isim || pd.ad ||
+        pf.isim || pf.ad ||
+        tamAddanIsim ||
+        ''
+    ).toString().trim() || 'Kullanıcı';
+
+    const soyad = (
+        profil.soyisim || profil.soyad ||
+        k.soyisim || k.soyad ||
+        pd.soyisim || pd.soyad ||
+        pf.soyisim || pf.soyad ||
+        tamAddanSoyad ||
+        ''
+    ).toString().trim();
+
     const adSoyad = soyad ? `${isim} ${soyad}` : isim;
     return { isim, soyad, adSoyad, profil };
 }
@@ -56,15 +89,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ── Kullanıcı bilgisi - Backend'den çek ──────────
     const { isim, soyad, adSoyad, profil } = await kullaniciAdiGetir();
 
-    document.getElementById('navUserName').textContent  = adSoyad;
-    document.getElementById('hosgeldinAdi').textContent = isim || 'Kullanıcı';
+    // Ortak navBaslat() localStorage'daki kullanici objesini okudugu icin,
+    // dashboard'da cikan isim/soyisim'i buraya senkronla.
+    const localKullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
+    const senkronIsim = (profil.isim || profil.ad || localKullanici.isim || localKullanici.ad || isim || '').toString().trim();
+    const senkronSoyisim = (profil.soyisim || profil.soyad || localKullanici.soyisim || localKullanici.soyad || soyad || '').toString().trim();
+    localStorage.setItem('kullanici', JSON.stringify({
+        ...localKullanici,
+        isim: senkronIsim,
+        soyisim: senkronSoyisim
+    }));
+
+    const gorunenAd = `${senkronIsim} ${senkronSoyisim}`.trim() || adSoyad || 'Kullanıcı';
+    document.getElementById('navUserName').textContent  = gorunenAd;
+    document.getElementById('hosgeldinAdi').textContent = senkronIsim || isim || 'Kullanıcı';
 
     // Avatar - Backend'den resim çekiliyorsa burada gösterilecek (ilerde avatar upload feature)
     const navAvatar = document.getElementById('navAvatarWrap');
     if (profil.avatar) {
         navAvatar.innerHTML = `<img src="${profil.avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #0077b5;">`;
     } else {
-        navAvatar.textContent = (isim).charAt(0).toUpperCase();
+        navAvatar.textContent = (senkronIsim || isim || 'K').charAt(0).toUpperCase();
     }
 
     // Tarih
