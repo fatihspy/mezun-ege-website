@@ -29,6 +29,13 @@ const userSchema = new mongoose.Schema({
   konum: { type: String, trim: true },
   hakkimda: { type: String, trim: true },
   telefon: { type: String, trim: true },
+  // İşveren profili alanları
+  sirketAdi: { type: String, trim: true },
+  adres: { type: String, trim: true },
+  slogan: { type: String, trim: true },
+  calisanSayisi: { type: String, trim: true },
+  isTurleri: [{ type: String, trim: true }],
+  bolumler: [{ type: String, trim: true }],
   egitim: [{
     okul: String,
     bolum: String,

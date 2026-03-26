@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="profil_doldurma_isveren.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>İşveren Profilini Oluştur - Egemyo Mezun</title>
+</head>
+<body>
+
+    <!-- Üst Bar -->
+    <header class="setup-header">
+        <div class="setup-header-icerik">
+            <h2>Egemyo Mezun</h2>
+            <button class="atla-btn" id="atlaBtn">Şimdilik Atla →</button>
+        </div>
+    </header>
+
+    <!-- Ana Wrap -->
+    <div class="setup-wrap">
+
+        <!-- İlerleme Çubuğu -->
+        <div class="ilerleme-wrap">
+            <div class="ilerleme-bar">
+                <div class="ilerleme-dolu" id="ilerlemeDolu"></div>
+            </div>
+            <span class="ilerleme-yazi" id="ilerlemeYazi">1 / 4</span>
+        </div>
+
+        <!-- ══ ADIM 1: Şirket Bilgileri ══ -->
+        <div class="adim aktif" id="adim-1">
+            <div class="adim-ikon">🏢</div>
+            <h1>Şirketinizi tanıtalım!</h1>
+            <p class="adim-aciklama">Mezunlar ve öğrenciler şirketinizi bu bilgilerle keşfedecek.</p>
+
+            <div class="form-group">
+                <label>Şirket Adı *</label>
+                <input type="text" id="s1SirketAdi" placeholder="Örn: Teknoloji A.Ş.">
+            </div>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Sektör *</label>
+                    <select id="s1Sektor">
+                        <option value="" disabled selected>Sektör seçin</option>
+                        <option>Bilişim / Yazılım</option>
+                        <option>Elektronik / Elektrik</option>
+                        <option>Makine / Üretim</option>
+                        <option>Otomotiv</option>
+                        <option>Gıda / Tarım</option>
+                        <option>İnşaat / Mimarlık</option>
+                        <option>Sağlık / Biyomedikal</option>
+                        <option>Finans / Muhasebe</option>
+                        <option>Eğitim</option>
+                        <option>Lojistik / Taşımacılık</option>
+                        <option>Enerji</option>
+                        <option>Kimya / İlaç</option>
+                        <option>Medya / Tasarım</option>
+                        <option>Diğer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Çalışan Sayısı</label>
+                    <select id="s1CalisanSayisi">
+                        <option value="" disabled selected>Seçin</option>
+                        <option>1-10</option>
+                        <option>11-50</option>
+                        <option>51-200</option>
+                        <option>201-500</option>
+                        <option>500+</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Konum *</label>
+                <input type="text" id="s1Konum" placeholder="Örn: İzmir, Türkiye">
+            </div>
+            <div class="form-group">
+                <label>Şirket Tanıtım Sloganı</label>
+                <input type="text" id="s1Slogan" placeholder="Örn: Geleceği birlikte inşa ediyoruz">
+                <span class="form-ipucu">Kısa ve etkileyici bir cümle. Profilde öne çıkacak.</span>
+            </div>
+
+            <div class="adim-footer">
+                <div></div>
+                <button class="btn-ileri" onclick="ileri(1)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 2: İletişim & Sosyal Medya ══ -->
+        <div class="adim" id="adim-2">
+            <div class="adim-ikon">📬</div>
+            <h1>İletişim Bilgileri</h1>
+            <p class="adim-aciklama">Adaylar size nasıl ulaşabilir?</p>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>İletişim Telefonu</label>
+                    <input type="tel" id="s2Telefon" placeholder="+90 232 xxx xx xx">
+                </div>
+                <div class="form-group">
+                    <label>Web Sitesi</label>
+                    <input type="text" id="s2Website" placeholder="www.sirketiniz.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Adres</label>
+                <input type="text" id="s2Adres" placeholder="Örn: Bornova, İzmir">
+            </div>
+
+            <div class="separator"></div>
+            <div class="bolum-baslik">🔗 Sosyal Medya</div>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>LinkedIn</label>
+                    <input type="text" id="s2Linkedin" placeholder="linkedin.com/company/sirket">
+                </div>
+                <div class="form-group">
+                    <label>Instagram / Twitter</label>
+                    <input type="text" id="s2Sosyal" placeholder="@sirketiniz">
+                </div>
+            </div>
+
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(2)">← Geri</button>
+                <button class="btn-ileri" onclick="ileri(2)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 3: Aradığınız Profiller ══ -->
+        <div class="adim" id="adim-3">
+            <div class="adim-ikon">🎯</div>
+            <h1>Aradığınız Profiller</h1>
+            <p class="adim-aciklama">Hangi tür adayları arıyorsunuz? Birden fazla seçebilirsiniz.</p>
+
+            <div class="bolum-baslik">💼 İş Türleri</div>
+            <div class="chip-secici" id="isTurleriSecici">
+                <div class="chip" data-val="tam" onclick="chipSec(this,'isTurleri')">Tam Zamanlı</div>
+                <div class="chip" data-val="yari" onclick="chipSec(this,'isTurleri')">Yarı Zamanlı</div>
+                <div class="chip" data-val="staj" onclick="chipSec(this,'isTurleri')">Staj</div>
+                <div class="chip" data-val="uzaktan" onclick="chipSec(this,'isTurleri')">Uzaktan</div>
+                <div class="chip" data-val="hibrit" onclick="chipSec(this,'isTurleri')">Hibrit</div>
+            </div>
+
+            <div class="separator"></div>
+            <div class="bolum-baslik">🎓 Tercih Ettiğiniz Bölümler</div>
+            <div class="chip-secici" id="bolumlerSecici">
+                <div class="chip" data-val="Bilgisayar Programcılığı" onclick="chipSec(this,'bolumler')">Bilgisayar Programcılığı</div>
+                <div class="chip" data-val="Elektronik Teknolojisi" onclick="chipSec(this,'bolumler')">Elektronik</div>
+                <div class="chip" data-val="Elektrik" onclick="chipSec(this,'bolumler')">Elektrik</div>
+                <div class="chip" data-val="Mekatronik" onclick="chipSec(this,'bolumler')">Mekatronik</div>
+                <div class="chip" data-val="Makina" onclick="chipSec(this,'bolumler')">Makina</div>
+                <div class="chip" data-val="Otomotiv Teknolojisi" onclick="chipSec(this,'bolumler')">Otomotiv</div>
+                <div class="chip" data-val="Muhasebe ve Vergi Uygulamaları" onclick="chipSec(this,'bolumler')">Muhasebe</div>
+                <div class="chip" data-val="Grafik Tasarımı" onclick="chipSec(this,'bolumler')">Grafik Tasarım</div>
+                <div class="chip" data-val="Gıda Teknolojisi" onclick="chipSec(this,'bolumler')">Gıda Teknolojisi</div>
+                <div class="chip" data-val="Kimya Teknolojisi" onclick="chipSec(this,'bolumler')">Kimya</div>
+                <div class="chip" data-val="Tüm Bölümler" onclick="chipSecTum(this)" id="tumBolumlerChip">Tüm Bölümler</div>
+            </div>
+
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(3)">← Geri</button>
+                <button class="btn-ileri" onclick="ileri(3)">Devam Et →</button>
+            </div>
+        </div>
+
+        <!-- ══ ADIM 4: Hakkında ══ -->
+        <div class="adim" id="adim-4">
+            <div class="adim-ikon">✨</div>
+            <h1>Son Dokunuş!</h1>
+            <p class="adim-aciklama">Şirketinizi kısaca tanıtın. Adaylar bu yazıyı görecek.</p>
+
+            <div class="form-group">
+                <label>Şirket Hakkında</label>
+                <textarea id="s4Hakkinda" rows="5" placeholder="Şirketinizin misyonu, vizyonu, çalışma kültürü... Adaylara kendinizi tanıtın!"></textarea>
+                <span class="form-ipucu" id="karakterSayac">0 / 400 karakter</span>
+            </div>
+
+            <div class="ozet-kart" id="ozetKart">
+                <h3>📋 Profil Özeti</h3>
+                <div id="ozetIcerik"></div>
+            </div>
+
+            <div class="adim-footer">
+                <button class="btn-geri" onclick="geri(4)">← Geri</button>
+                <button class="btn-tamamla" id="tamamlaBtn">🚀 Profili Tamamla!</button>
+            </div>
+        </div>
+
+        <!-- ══ TAMAMLANDI ══ -->
+        <div class="adim" id="adim-bitti">
+            <div class="bitti-animasyon">🎉</div>
+            <h1>Profiliniz Hazır!</h1>
+            <p class="adim-aciklama">Artık ilan açabilir ve mezun öğrencilere ulaşabilirsiniz.</p>
+            <div class="bitti-butonlar">
+                <button class="btn-tamamla" onclick="window.location.href='../ilanlar/ilanlar.html'">📋 İlan Aç</button>
+                <button class="btn-geri" onclick="window.location.href='../isveren/isveren.html'">🏠 Panel'e Git</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="profil_doldurma_isveren.js"></script>
+</body>
+</html>

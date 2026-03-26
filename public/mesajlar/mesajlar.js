@@ -73,19 +73,21 @@ async function konusmalarıYukle() {
         
         data.konusmalar.forEach(k => {
             const sonMesaj = k.mesajlar[k.mesajlar.length - 1];
-            const okunmadiText = k.okunmadi > 0 ? `<span class="badge">${k.okunmadi}</span>` : '';
+            const okunmadiText = k.okunmadi > 0 ? `<span class="isv-k-badge">${k.okunmadi}</span>` : '';
+            const adSoyad = `${k.karsiKullanici.isim || ''} ${k.karsiKullanici.soyisim || ''}`.trim() || 'Kullanıcı';
+            const sonMetin = (sonMesaj?.metin || '').trim() || 'Henüz mesaj yok';
             
             const item = document.createElement('div');
             item.className = 'konusma-item' + (aktifKarsiKullaniciId === k.karsiKullanici._id.toString() ? ' aktif' : '');
             item.innerHTML = `
                 <div class="konusma-info">
-                    <div class="konusma-adi">${k.karsiKullanici.isim} ${k.karsiKullanici.soyisim}</div>
-                    <div class="konusma-mesaj">${sonMesaj.metin.substring(0, 50)}...</div>
+                    <div class="isv-k-ad">${escapeHtml(adSoyad)}</div>
+                    <div class="isv-k-son">${escapeHtml(sonMetin.substring(0, 60))}</div>
                 </div>
                 ${okunmadiText}
             `;
             item.style.cursor = 'pointer';
-            item.addEventListener('click', () => konusmaSec(k.karsiKullanici));
+            item.addEventListener('click', () => konusmaSec(k.karsiKullanici, item));
             listesi.appendChild(item);
         });
     } catch (err) {
@@ -96,7 +98,7 @@ async function konusmalarıYukle() {
 
 // ── KONUŞMA SEÇ ─────────────────────────────────────────────────────────
 
-async function konusmaSec(karsiKullanici) {
+async function konusmaSec(karsiKullanici, secilenItem = null) {
     aktifKarsiKullaniciId = karsiKullanici._id;
     aktifKarsiKullanici = karsiKullanici;
     
@@ -104,7 +106,7 @@ async function konusmaSec(karsiKullanici) {
     document.querySelectorAll('.konusma-item').forEach(item => {
         item.classList.remove('aktif');
     });
-    event.currentTarget?.classList.add('aktif');
+    secilenItem?.classList.add('aktif');
     
     // Boş durumu gizle, chat alanını aç
     document.getElementById('bosKonusma').style.display = 'none';
@@ -140,15 +142,16 @@ async function mesajlarıYukle() {
         mesajlarAlan.innerHTML = '';
         
         const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
+        const benimId = kullanici.id || kullanici._id;
         
         konusma.mesajlar.forEach(m => {
-            const benGonderdim = m.gonderen._id === kullanici._id;
+            const gonderenId = m.gonderen?._id || m.gonderen;
+            const benGonderdim = String(gonderenId) === String(benimId);
             const div = document.createElement('div');
-            div.className = benGonderdim ? 'mesaj ben' : 'mesaj kisi';
+            div.className = benGonderdim ? 'isv-msg giden' : 'isv-msg gelen';
             div.innerHTML = `
-                <div class="mesaj-balonu">
-                    <div class="mesaj-metin">${escapeHtml(m.metin)}</div>
-                    <div class="mesaj-tarih">${new Date(m.tarih).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="isv-msg-balon">${escapeHtml(m.metin)}</div>
+                <div class="isv-msg-zaman">${new Date(m.tarih).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
             `;
             mesajlarAlan.appendChild(div);

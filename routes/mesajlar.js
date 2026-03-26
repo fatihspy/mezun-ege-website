@@ -4,6 +4,7 @@ const router = express.Router();
 const Mesaj = require('../models/Mesaj');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
+const validator = require('../utils/validator');
 
 // Rate limiters
 const mesajLimiter = rateLimit({
@@ -11,6 +12,10 @@ const mesajLimiter = rateLimit({
   max: 30,                    // 30 mesaj/dakika
   message: { basarili: false, mesaj: 'Çok fazla mesaj gönderdiniz. Lütfen bir tur sonra tekrar deneyin.' }
 });
+
+function regexEscape(str) {
+        return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 // GET /api/mesajlar/konusmalar — Kullanıcının tüm konuşmalarını gruplayarak getir
 router.get('/konusmalar', mesajLimiter, authMiddleware, async (req, res, next) => {
@@ -52,13 +57,17 @@ router.get('/konusmalar', mesajLimiter, authMiddleware, async (req, res, next) =
 // GET /api/mesajlar/ara — Yeni mesaj için sistemdeki kişileri ara
 router.get('/ara', authMiddleware, async (req, res, next) => {
     try {
-        const arama = req.query.q || '';
+        const arama = String(req.query.q || '').substring(0, 100).trim();
+        if (arama.length < 2) {
+            return res.json({ basarili: true, kisiler: [] });
+        }
+        const aramaGuvenli = regexEscape(arama);
         const kisiler = await User.find({
             _id: { $ne: req.kullanici._id }, // Kendimizi hariç tut
             $or: [
-                { isim: { $regex: arama, $options: 'i' } },
-                { soyisim: { $regex: arama, $options: 'i' } },
-                { email: { $regex: arama, $options: 'i' } }
+                { isim: { $regex: aramaGuvenli, $options: 'i' } },
+                { soyisim: { $regex: aramaGuvenli, $options: 'i' } },
+                { email: { $regex: aramaGuvenli, $options: 'i' } }
             ]
         }).select('isim soyisim rol email').limit(10);
         
@@ -71,8 +80,20 @@ router.post('/:aliciId', mesajLimiter, authMiddleware, async (req, res, next) =>
     try {
         const alici = await User.findById(req.params.aliciId);
         if (!alici) return res.status(404).json({ basarili: false, mesaj: 'Kişi bulunamadı.' });
+        if (alici._id.toString() === req.kullanici._id.toString()) {
+            return res.status(400).json({ basarili: false, mesaj: 'Kendinize mesaj gönderemezsiniz.' });
+        }
 
-        const yeniMesaj = await Mesaj.create({ gonderen: req.kullanici._id, alici: alici._id, metin: req.body.metin });
+        const metinHam = req.body?.metin;
+        const metin = validator.sanitizeString(metinHam);
+        if (!metin || metin.length < 1) {
+            return res.status(400).json({ basarili: false, mesaj: 'Mesaj boş olamaz.' });
+        }
+        if (metin.length > 1000) {
+            return res.status(400).json({ basarili: false, mesaj: 'Mesaj 1000 karakteri geçemez.' });
+        }
+
+        const yeniMesaj = await Mesaj.create({ gonderen: req.kullanici._id, alici: alici._id, metin });
         res.json({ basarili: true, mesaj: yeniMesaj });
     } catch (err) { next(err); }
 });

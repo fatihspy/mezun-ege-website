@@ -114,3 +114,36 @@ POST /api/auth/kayit
 ```bash
 npm run dev
 ```
+
+---
+
+## Test Komutları
+
+Smoke test (auth middleware kontrolü):
+
+```bash
+npm test
+```
+
+Login testi:
+
+```bash
+npm run test:login
+```
+
+Register testi:
+
+```bash
+npm run test:register
+```
+
+Bu komutlar için `.env` içinde aşağıdaki alanları doldur:
+
+```env
+TEST_API_BASE_URL=http://localhost:3000
+TEST_EMAIL=
+TEST_PASSWORD=
+TEST_REGISTER_EMAIL=
+TEST_REGISTER_PASSWORD=
+TEST_REGISTER_ROLE=isveren
+```

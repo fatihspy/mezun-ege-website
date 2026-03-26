@@ -7,10 +7,34 @@ document.addEventListener('DOMContentLoaded', () => { navBaslat(); logoutBaslat(
 const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
 
 let tumBasvurular = [];
+let aktifFiltre = '';
+
+const turLabel = {
+    tam: 'Tam Zamanlı',
+    yari: 'Yarı Zamanlı',
+    staj: 'Staj',
+    uzaktan: 'Uzaktan'
+};
+
+const durumLabel = {
+    beklemede: '⏳ Beklemede',
+    gorusme: '🤝 Görüşme',
+    kabul: '✅ Kabul',
+    reddedildi: '❌ Reddedildi'
+};
+
+function tarihFormatla(tarih) {
+    if (!tarih) return '-';
+    return new Date(tarih).toLocaleDateString('tr-TR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+}
 
 // ── Veri (Backend'den Getir) ──────────────────────────
 async function verileriYukle() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
         const res = await fetch(`${API_URL}/basvurular/benimkiler`, {
             headers: { 'Authorization': `Bearer ${token}` }

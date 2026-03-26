@@ -124,9 +124,17 @@
                     showSuccess('Email başarıyla doğrulandı! ✅ Yönlendiriliyorsunuz...');
                     // Profil doldurmayı atlatmamak için backend'den kontrol et
                     const kullaniciGuncel = JSON.parse(localStorage.getItem('kullanici') || '{}');
-                    const hedef = kullaniciGuncel.profilTamamlandi
-                        ? '../dashboard/dashboard.html'
-                        : '../profil_doldurma/profil_doldurma.html';
+                    const isIsveren = kullaniciGuncel.rol?.includes('isveren');
+                    let hedef;
+                    if (isIsveren) {
+                        hedef = kullaniciGuncel.profilTamamlandi
+                            ? '../isveren/isveren.html'
+                            : '../profil_doldurma_isveren/profil_doldurma_isveren.html';
+                    } else {
+                        hedef = kullaniciGuncel.profilTamamlandi
+                            ? '../dashboard/dashboard.html'
+                            : '../profil_doldurma/profil_doldurma.html';
+                    }
                     setTimeout(() => {
                         window.location.href = hedef;
                     }, 2000);

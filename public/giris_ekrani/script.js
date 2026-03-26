@@ -249,7 +249,7 @@ async function girisYap() {
             yazi.textContent = '✅ Yönlendiriliyorsunuz...';
             setTimeout(() => {
                 const hedef = veri.kullanici.rol.includes('isveren')
-                    ? '../isveren/isveren.html'
+                    ? (profilTamamlandi ? '../isveren/isveren.html' : '../profil_doldurma_isveren/profil_doldurma_isveren.html')
                     : (!profilTamamlandi ? '../profil_doldurma/profil_doldurma.html' : '../dashboard/dashboard.html');
                 window.location.href = hedef;
             }, 800);
@@ -335,7 +335,7 @@ async function sifreBelirleFonksiyon() {
                 localStorage.setItem('profilTamamlandi', 'false');
                 const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
                 window.location.href = kullanici.rol?.includes('isveren')
-                    ? '../isveren/isveren.html'
+                    ? '../profil_doldurma_isveren/profil_doldurma_isveren.html'
                     : '../profil_doldurma/profil_doldurma.html';
             }, 800);
         } else {
@@ -504,8 +504,11 @@ function yonlendir(rol, profilTamamlandi) {
         ? profilTamamlandi
         : localStorage.getItem('profilTamamlandi') === 'true';
 
-    if (rol.includes('isveren')) window.location.href = '../isveren/isveren.html';
-    else if (!tamamlandi) window.location.href = '../profil_doldurma/profil_doldurma.html';
+    if (rol.includes('isveren')) {
+        window.location.href = tamamlandi
+            ? '../isveren/isveren.html'
+            : '../profil_doldurma_isveren/profil_doldurma_isveren.html';
+    } else if (!tamamlandi) window.location.href = '../profil_doldurma/profil_doldurma.html';
     else window.location.href = '../dashboard/dashboard.html';
 }
 
@@ -596,7 +599,7 @@ async function kayitYap() {
                     window.location.href = '../dogrulama/dogrulama.html';
                 } else {
                     const hedef = veri.kullanici.rol.includes('isveren')
-                        ? '../isveren/isveren.html'
+                        ? '../profil_doldurma_isveren/profil_doldurma_isveren.html'
                         : '../profil_doldurma/profil_doldurma.html';
                     window.location.href = hedef;
                 }

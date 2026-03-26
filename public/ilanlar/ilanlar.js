@@ -18,7 +18,7 @@ let tumIlanlar = [];
 let basvurulanIlanlar = []; // Kullanıcının başvurduğu ilanların ID'leri
 
 async function verileriYukle() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
     
     try {
@@ -289,7 +289,7 @@ window.basvurYap = function(id) {
 document.getElementById('basvuruTamam').addEventListener('click', async () => {
     const ilanId = aktifIlanId;
     const not = document.getElementById('basvuruNot').value.trim();
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
     try {
         const res = await fetch(`${API_URL}/basvurular/${ilanId}`, {

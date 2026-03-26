@@ -2,7 +2,7 @@ const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://local
 
 // Auth kontrolü — sadece işveren girebilir
 (function() {
-    const token     = localStorage.getItem('token');
+    const token     = localStorage.getItem('token') || sessionStorage.getItem('token');
     const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
     if (!token)                              { window.location.href = '../giris_ekrani/index.html'; return; }
     if (!kullanici.rol?.includes('isveren')) { window.location.href = '../dashboard/dashboard.html'; }
@@ -11,14 +11,69 @@ const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://local
 document.addEventListener('DOMContentLoaded', () => { navBaslat(); });
 
 // ── Kullanıcı & UI ────────────────────────────────────
-const kullanici  = JSON.parse(localStorage.getItem('kullanici') || '{}');
-const isverenAdi = kullanici.isim ? `${kullanici.isim} ${kullanici.soyisim || ''}`.trim() : 'İşveren';
-const sirketAdi  = JSON.parse(localStorage.getItem('isverenAyarlar') || '{}').sirket || 'Şirketim';
+const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+let kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
 
-document.getElementById('topAdi').textContent      = isverenAdi;
-document.getElementById('topAvatar').textContent   = isverenAdi.charAt(0).toUpperCase();
-document.getElementById('hosgeldinAdi').textContent= kullanici.isim || 'İşveren';
-document.getElementById('bugunTarih').textContent  = new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' });
+function aktifSirketAdi() {
+    return (kullanici.sirketAdi || kullanici.isim || '').trim();
+}
+
+function normMetin(val) {
+    return String(val || '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function selectDegeriAyarla(selectEl, hamDeger, esAnlamliMap = {}) {
+    if (!selectEl || !hamDeger) return false;
+
+    const adaylar = [hamDeger];
+    const normHam = normMetin(hamDeger);
+    if (esAnlamliMap[normHam]) adaylar.push(esAnlamliMap[normHam]);
+
+    for (const aday of adaylar) {
+        const normAday = normMetin(aday);
+        for (const opt of selectEl.options) {
+            if (normMetin(opt.value) === normAday || normMetin(opt.text) === normAday) {
+                selectEl.value = opt.value;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+document.getElementById('bugunTarih').textContent = new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' });
+
+// Backend'den güncel profili çek, UI'ı güncelle
+(async function profilYukle() {
+    try {
+        const res = await fetch(CONFIG.AUTH_URL + '/profil', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const veri = await res.json();
+        if (veri.basarili && veri.profil) {
+            const p = veri.profil;
+            // localStorage'ı güncelle
+            kullanici = { ...kullanici, ...p };
+            localStorage.setItem('kullanici', JSON.stringify(kullanici));
+
+            const gosterimAdi = (p.sirketAdi || p.isim || '').trim();
+            const ad = gosterimAdi || 'İşveren';
+            document.getElementById('topAdi').textContent       = ad;
+            document.getElementById('topAvatar').textContent    = ad.charAt(0).toUpperCase();
+            document.getElementById('hosgeldinAdi').textContent = gosterimAdi || 'İşveren';
+        }
+    } catch(e) {
+        // Hata olursa localStorage'dan göster
+        const ad = aktifSirketAdi() || 'İşveren';
+        document.getElementById('topAdi').textContent       = ad;
+        document.getElementById('topAvatar').textContent    = ad.charAt(0).toUpperCase();
+        document.getElementById('hosgeldinAdi').textContent = ad;
+    }
+})();
 
 // ── Global State (Veritabanından Gelenler) ────────────
 let isverenIlanlar = [];
@@ -28,7 +83,6 @@ let isvAktifKarsiId = null;
 
 // ── Verileri Backend'den Çek ──────────────────────────
 async function verileriYukle() {
-    const token = localStorage.getItem('token');
     try {
         // İlanları Çek
 const resIlanlar = await fetch(`${API_URL}/ilanlar/benimkiler`, { 
@@ -76,6 +130,12 @@ function toast(mesaj) {
     const t = document.getElementById('toast');
     t.textContent = mesaj; t.classList.add('goster');
     setTimeout(() => t.classList.remove('goster'), 3000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = String(text || '');
+    return div.innerHTML;
 }
 
 // ── Sayfa Geçişi ──────────────────────────────────────
@@ -167,7 +227,7 @@ function ilanListesiYukle() {
         const bSayisi = isverenBasvurular.filter(b => b.ilan?._id === i._id).length;
         return `
         <div class="ilan-satir">
-            <div class="ilan-logo">${sirketAdi.charAt(0).toUpperCase()}</div>
+            <div class="ilan-logo">${(aktifSirketAdi() || 'İ').charAt(0).toUpperCase()}</div>
             <div class="ilan-bilgi">
                 <div class="ilan-pozisyon">${i.pozisyon}</div>
                 <div class="ilan-meta-row">
@@ -195,7 +255,6 @@ document.getElementById('ilanDurumFiltre').addEventListener('change', ilanListes
 
 async function ilanDurumDegistir(id, yeniDurum) {
     try {
-        const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/ilanlar/${id}`, {
             method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ aktifMi: yeniDurum })
@@ -239,13 +298,12 @@ document.getElementById('ilanKaydet').addEventListener('click', async () => {
     if (!pozisyon || !aciklama) { toast('⚠️ Pozisyon ve açıklama zorunludur!'); return; }
 
     const payload = {
-        pozisyon, sirket: sirketAdi, konum: document.getElementById('fKonum').value.trim(),
+        pozisyon, sirket: aktifSirketAdi() || 'İşveren', konum: document.getElementById('fKonum').value.trim(),
         kategori: document.getElementById('fKategori').value, tur: document.getElementById('fTur').value,
         maas: document.getElementById('fMaas').value.trim(), aktifMi: document.getElementById('fDurum').value === 'aktif',
         aciklama, nitelikler: document.getElementById('fNitelikler').value.trim(), sonTarih: document.getElementById('fSonTarih').value || null
     };
 
-    const token = localStorage.getItem('token');
     const url = duzenlenenId ? `${API_URL}/ilanlar/${duzenlenenId}` : `${API_URL}/ilanlar`;
     const method = duzenlenenId ? 'PUT' : 'POST';
 
@@ -272,7 +330,6 @@ window.ilanSilModal = function(id) { silAktifId = id; document.getElementById('i
 document.getElementById('ilanSilIptal').addEventListener('click', () => document.getElementById('ilan-sil-modal').classList.remove('show'));
 document.getElementById('ilanSilOnayla').addEventListener('click', async () => {
     try {
-        const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/ilanlar/${silAktifId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) { document.getElementById('ilan-sil-modal').classList.remove('show'); toast('🗑️ İlan silindi.'); verileriYukle(); }
     } catch (e) { toast('⚠️ Silinemedi.'); }
@@ -344,7 +401,6 @@ window.basvuruDurumAc = function(id) {
     if (b) {
         let cvHtml = '';
         if (b.cvVar) {
-            const token = localStorage.getItem('token');
             cvHtml = `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e1e5e9;">
                 <a href="${API_URL}/dosya/cv/${b._id}?type=basvuru&token=${token}" target="_blank" style="display:inline-block;padding:8px 14px;background:#0077b5;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">📄 CV İndir</a>
             </div>`;
@@ -359,7 +415,6 @@ document.getElementById('bdurumKapat').addEventListener('click', () => document.
 document.querySelectorAll('.durum-sec').forEach(btn => {
     btn.addEventListener('click', async () => {
         try {
-            const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/basvurular/${aktifBasvuruId}/durum`, {
                 method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ durum: btn.dataset.durum })
             });
@@ -387,8 +442,8 @@ function isvKonusmaListesiRender(filtre = '') {
         return `
             <div class="isv-konusma-item ${aktifCls}" onclick="isvKonusmaAc('${k.karsiKullanici._id}')">
                 ${k.okunmadi ? `<span class="isv-k-badge">${k.okunmadi}</span>` : ''}
-                <div class="isv-k-ad">${kisiAdi}</div>
-                <div class="isv-k-son">${onizleme}</div>
+                <div class="isv-k-ad">${escapeHtml(kisiAdi)}</div>
+                <div class="isv-k-son">${escapeHtml(onizleme)}</div>
             </div>
         `;
     }).join('');
@@ -404,7 +459,7 @@ window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     document.getElementById('isvChatAktif').style.display = 'flex';
 
     const kisiAdi = konusma ? tamAd(konusma.karsiKullanici) : 'Aday';
-    document.getElementById('isvChatBaslik').innerHTML = `<span>💬 ${kisiAdi}</span>`;
+    document.getElementById('isvChatBaslik').innerHTML = `<span>💬 ${escapeHtml(kisiAdi)}</span>`;
 
     const alan = document.getElementById('isvMesajlarAlan');
     if (!konusma || !konusma.mesajlar.length) {
@@ -412,7 +467,7 @@ window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     } else {
         alan.innerHTML = konusma.mesajlar.map(m => `
             <div class="isv-msg ${(m.gonderen._id || m.gonderen) === kullanici.id ? 'giden' : 'gelen'}">
-                <div class="isv-msg-balon">${m.metin}</div>
+                <div class="isv-msg-balon">${escapeHtml(m.metin)}</div>
                 <div class="isv-msg-zaman">${saatFmt(m.tarih)}</div>
             </div>
         `).join('');
@@ -424,7 +479,6 @@ window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     if (konusma && konusma.okunmadi > 0 && okunduGonder) {
         konusma.okunmadi = 0; 
         try {
-            const token = localStorage.getItem('token');
             await fetch(`${API_URL}/mesajlar/${karsiId}/okundu`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
         } catch(e) {}
     }
@@ -437,7 +491,6 @@ async function isvMesajGonder() {
     if (!metin) return;
 
     input.value = '';
-    const token = localStorage.getItem('token');
     try {
         const res = await fetch(`${API_URL}/mesajlar/${isvAktifKarsiId}`, {
             method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -476,14 +529,128 @@ document.getElementById('yeniMesajBtn').addEventListener('click', () => {
 });
 
 // ── Hesap Ayarları & Logout ───────────────────────────
-function ayarlarYukle() {
-    const ayarlar = JSON.parse(localStorage.getItem('isverenAyarlar') || '{}');
-    document.getElementById('hAd').value      = kullanici.isim    || '';
-    document.getElementById('hSoyad').value   = kullanici.soyisim || '';
-    document.getElementById('hSirket').value  = ayarlar.sirket    || '';
-    document.getElementById('hEmail').value   = kullanici.email   || '';
+async function ayarlarYukle() {
+    document.getElementById('hEmail').value = kullanici.email || '';
+
+    try {
+        const res = await fetch(CONFIG.AUTH_URL + '/profil', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const veri = await res.json();
+        if (!veri.basarili || !veri.profil) return;
+        const p = veri.profil;
+
+        // Temel alanlar
+        document.getElementById('hEmail').value          = p.email    || '';
+        document.getElementById('hSirket').value         = p.sirketAdi || p.isim || '';
+        document.getElementById('hSirketAciklama').value = p.hakkimda || '';
+        document.getElementById('hWebsite').value        = p.sosyalMedya?.web      || '';
+        document.getElementById('hTelefon').value        = p.telefon               || '';
+        document.getElementById('hAdres').value          = p.adres                 || '';
+        document.getElementById('hCalisanSayisi').value  = p.calisanSayisi || '';
+
+        // Sektör (unvan olarak kaydedildi)
+        const sektorEl = document.getElementById('hSektor');
+        const sektorEsleme = {
+            'bilisim / yazilim': 'Yazılım & Teknoloji',
+            'bilişim / yazılım': 'Yazılım & Teknoloji',
+            'elektronik / elektrik': 'Üretim & Sanayi',
+            'makine / üretim': 'Üretim & Sanayi',
+            'makine / uretim': 'Üretim & Sanayi',
+            'otomotiv': 'Üretim & Sanayi',
+            'gida / tarim': 'Perakende & E-ticaret',
+            'gıda / tarım': 'Perakende & E-ticaret',
+            'insaat / mimarlik': 'İnşaat',
+            'inşaat / mimarlık': 'İnşaat',
+            'saglik / biyomedikal': 'Sağlık',
+            'sağlık / biyomedikal': 'Sağlık',
+            'finans / muhasebe': 'Finans & Bankacılık',
+            'lojistik / taşımacılık': 'Lojistik',
+            'lojistik / tasimacilik': 'Lojistik',
+            'medya / tasarım': 'Diğer',
+            'medya / tasarim': 'Diğer',
+            'kimya / ilaç': 'Diğer',
+            'kimya / ilac': 'Diğer'
+        };
+        selectDegeriAyarla(sektorEl, p.unvan, sektorEsleme);
+
+        // Geriye dönük destek: eski kayıtlarda çalışan sayısı JSON içinde tutuluyor olabilir
+        if (p.egitim && p.egitim[0]?.aciklama) {
+            try {
+                const detay = JSON.parse(p.egitim[0].aciklama);
+                if (!document.getElementById('hCalisanSayisi').value && detay.calisanSayisi) {
+                    document.getElementById('hCalisanSayisi').value = detay.calisanSayisi;
+                }
+                if (detay.website)      document.getElementById('hWebsite').value        = detay.website;
+            } catch(e) { /* JSON değilse atla */ }
+        }
+
+        const calisanEl = document.getElementById('hCalisanSayisi');
+        if (calisanEl && !calisanEl.value) {
+            const eskiCalisan = p.egitim?.[0]?.aciklama;
+            if (eskiCalisan) {
+                try {
+                    const detay = JSON.parse(eskiCalisan);
+                    selectDegeriAyarla(calisanEl, detay.calisanSayisi);
+                } catch(e) { /* JSON değilse atla */ }
+            }
+        }
+
+    } catch(e) { console.warn('Profil yüklenemedi:', e); }
 }
-document.getElementById('hesapKaydet').addEventListener('click', () => { toast('✅ Kaydedildi'); });
+
+document.getElementById('hesapKaydet').addEventListener('click', async () => {
+    const btn = document.getElementById('hesapKaydet');
+    btn.disabled = true;
+    btn.textContent = 'Kaydediliyor...';
+
+    const sirketAdiVal = document.getElementById('hSirket').value.trim();
+    const websiteVal   = document.getElementById('hWebsite').value.trim();
+    const adresVal     = document.getElementById('hAdres').value.trim();
+    const calisanVal   = document.getElementById('hCalisanSayisi').value;
+
+    const guncelleme = {
+        sirketAdi: sirketAdiVal,
+        isim:     sirketAdiVal,
+        soyisim:  'İşveren',
+        unvan:    document.getElementById('hSektor').value,
+        hakkimda: document.getElementById('hSirketAciklama').value.trim(),
+        telefon:  document.getElementById('hTelefon').value.trim(),
+        adres:    adresVal,
+        calisanSayisi: calisanVal,
+        sosyalMedya: { web: websiteVal },
+        egitim: [{
+            okul:     sirketAdiVal,
+            bolum:    document.getElementById('hSektor').value,
+            aciklama: JSON.stringify({
+                calisanSayisi: calisanVal,
+                website:       websiteVal
+            })
+        }]
+    };
+
+    try {
+        const res = await fetch(CONFIG.AUTH_URL + '/profil-guncelle', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(guncelleme)
+        });
+        const veri = await res.json();
+        if (veri.basarili) {
+            const kGuncel = { ...kullanici, ...guncelleme, ...veri.kullanici };
+            kullanici = kGuncel;
+            localStorage.setItem('kullanici', JSON.stringify(kGuncel));
+            toast('✅ Profil kaydedildi');
+        } else {
+            toast('❌ ' + (veri.mesaj || 'Kayıt başarısız'));
+        }
+    } catch(e) {
+        toast('❌ Sunucuya ulaşılamıyor');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Kaydet';
+    }
+});
 
 // Logout (isveren paneli farklı buton id kullanıyor, config.js logoutBaslat() bunu yönetemez)
 // Bu yüzden burada tutuldu ama CONFIG.AUTH_URL kullanılıyor
@@ -496,14 +663,12 @@ document.getElementById('hesapKaydet').addEventListener('click', () => { toast('
     cikisBtn.addEventListener('click', () => modal.classList.add('show'));
     iptalBtn?.addEventListener('click', () => modal.classList.remove('show'));
     onayBtn?.addEventListener('click', async () => {
-        const token = localStorage.getItem('token');
         if (token) {
             try { await fetch(CONFIG.AUTH_URL + '/cikis', { method:'POST', headers:{'Authorization':`Bearer ${token}`} }); } catch(e) {}
             ['token','beniHatirla','kullanici','profilTamamlandi'].forEach(k => localStorage.removeItem(k));
         }
         window.location.href = '../giris_ekrani/index.html';
     });
-    document.getElementById('hamburger')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('acik'));
 })();
 window.addEventListener('click', (e) => {
     ['logout-modal','ilan-sil-modal','bdurum-modal','isvYeniMesajModal'].forEach(id => {

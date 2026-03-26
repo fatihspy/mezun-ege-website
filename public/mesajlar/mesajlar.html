@@ -113,10 +113,10 @@
 
             <!-- Mesaj Paneli -->
             <main class="main-content">
-                <div class="mesaj-container">
+                <div class="mesaj-container isv-mesaj-container">
 
                     <!-- Sol: Konuşma Listesi -->
-                    <div class="konusma-listesi">
+                    <div class="konusma-listesi isv-konusma-liste">
                         <div class="konusma-header">
                             <h2>Mesajlar</h2>
                             <button class="yeni-mesaj-btn" id="yeniMesajBtn" title="Yeni Mesaj">✏️</button>
@@ -131,10 +131,10 @@
                     </div>
 
                     <!-- Sağ: Aktif Konuşma -->
-                    <div class="aktif-konusma" id="aktifKonusma">
+                    <div class="aktif-konusma isv-chat-alan" id="aktifKonusma">
 
                         <!-- Boş Durum -->
-                        <div class="bos-konusma" id="bosKonusma">
+                        <div class="bos-konusma isv-chat-bos" id="bosKonusma">
                             <div class="bos-icon">💬</div>
                             <h3>Bir konuşma seçin</h3>
                             <p>Sol taraftan bir konuşmayı seçin veya yeni bir mesaj başlatın.</p>
@@ -144,7 +144,7 @@
                         <!-- Aktif Chat -->
                         <div class="chat-alan" id="chatAlan" style="display:none;">
                             <!-- Chat Header -->
-                            <div class="chat-header">
+                            <div class="chat-header isv-chat-baslik">
                                 <div class="chat-kisi-bilgi">
                                     <div class="chat-avatar" id="chatAvatar">A</div>
                                     <div>
@@ -158,12 +158,12 @@
                             </div>
 
                             <!-- Mesajlar -->
-                            <div class="mesajlar-alan" id="mesajlarAlan">
+                            <div class="mesajlar-alan isv-mesajlar-alan" id="mesajlarAlan">
                                 <!-- JS ile doldurulur -->
                             </div>
 
                             <!-- Mesaj Gönder -->
-                            <div class="mesaj-gonder">
+                            <div class="mesaj-gonder isv-mesaj-gir">
                                 <textarea id="mesajInput" placeholder="Mesajınızı yazın..." rows="1"></textarea>
                                 <button class="gonder-btn" id="gonderBtn">➤</button>
                             </div>

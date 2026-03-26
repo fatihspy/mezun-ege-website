@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Montserrat',sans-serif; }
+body { background:linear-gradient(135deg,#f0f4f8 0%,#e8f4fd 100%); min-height:100vh; color:#333; }
+
+/* ── Header ─────────────────────────────── */
+.setup-header {
+    background:white; border-bottom:1px solid #e1e5e9;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06); position:sticky; top:0; z-index:100;
+}
+.setup-header-icerik {
+    max-width:680px; margin:0 auto; padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.setup-header h2 { color:#0077b5; font-weight:700; font-size:22px; }
+.atla-btn {
+    background:none; border:1px solid #e1e5e9; color:#718096;
+    padding:8px 16px; border-radius:8px; font-size:13px;
+    font-weight:600; cursor:pointer; transition:all 0.2s;
+    font-family:'Montserrat',sans-serif;
+}
+.atla-btn:hover { background:#f8f9fa; color:#333; }
+
+/* ── Wrap ────────────────────────────────── */
+.setup-wrap { max-width:680px; margin:0 auto; padding:32px 20px 60px; }
+
+/* ── İlerleme ────────────────────────────── */
+.ilerleme-wrap { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+.ilerleme-bar { flex:1; height:6px; background:#e1e5e9; border-radius:6px; overflow:hidden; }
+.ilerleme-dolu { height:100%; background:linear-gradient(90deg,#0077b5,#00a0dc); border-radius:6px; transition:width 0.5s ease; width:25%; }
+.ilerleme-yazi { font-size:13px; font-weight:600; color:#718096; white-space:nowrap; }
+
+/* ── Adım ────────────────────────────────── */
+.adim { display:none; animation:fadeSlide 0.4s ease; }
+.adim.aktif { display:block; }
+
+@keyframes fadeSlide {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+.adim-ikon { font-size:52px; margin-bottom:16px; }
+.adim h1 { font-size:28px; font-weight:700; color:#1a202c; margin-bottom:8px; }
+.adim-aciklama { font-size:15px; color:#718096; margin-bottom:28px; line-height:1.6; }
+
+/* ── Form Elemanları ─────────────────────── */
+.form-row-2 { display:flex; gap:16px; }
+.form-group { flex:1; display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
+.form-group label { font-size:13px; font-weight:600; color:#4a5568; }
+.form-ipucu { font-size:11px; color:#a0aec0; margin-top:2px; }
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    border:2px solid #e1e5e9; border-radius:10px;
+    padding:12px 14px; font-size:14px;
+    font-family:'Montserrat',sans-serif; color:#333;
+    outline:none; resize:vertical; transition:all 0.2s;
+    background:white;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color:#0077b5; box-shadow:0 0 0 4px rgba(0,119,181,0.1);
+}
+
+.separator { height:1px; background:#e1e5e9; margin:20px 0; }
+
+/* ── Adım Footer ─────────────────────────── */
+.adim-footer {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:32px; padding-top:20px; border-top:1px solid #f0f0f0;
+}
+
+.btn-ileri {
+    background:linear-gradient(135deg,#0077b5,#005f8e);
+    color:white; border:none; padding:13px 32px;
+    border-radius:12px; font-size:15px; font-weight:600;
+    cursor:pointer; transition:all 0.2s; font-family:'Montserrat',sans-serif;
+    box-shadow:0 4px 14px rgba(0,119,181,0.35);
+}
+.btn-ileri:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,119,181,0.45); }
+
+.btn-geri {
+    background:white; color:#718096; border:2px solid #e1e5e9;
+    padding:12px 24px; border-radius:12px; font-size:14px;
+    font-weight:600; cursor:pointer; transition:all 0.2s;
+    font-family:'Montserrat',sans-serif;
+}
+.btn-geri:hover { background:#f8f9fa; color:#333; }
+
+.btn-tamamla {
+    background:linear-gradient(135deg,#38a169,#2f855a);
+    color:white; border:none; padding:13px 32px;
+    border-radius:12px; font-size:15px; font-weight:600;
+    cursor:pointer; transition:all 0.2s; font-family:'Montserrat',sans-serif;
+    box-shadow:0 4px 14px rgba(56,161,105,0.35);
+}
+.btn-tamamla:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(56,161,105,0.45); }
+
+/* ── Bölüm Başlığı ───────────────────────── */
+.bolum-baslik {
+    font-size:14px; font-weight:700; color:#4a5568;
+    margin-bottom:14px; margin-top:4px;
+    padding-bottom:8px; border-bottom:2px solid #e8f4fd;
+    display:flex; align-items:center; gap:6px;
+}
+
+/* ── Chip Seçici ─────────────────────────── */
+.chip-secici {
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px;
+}
+.chip {
+    background:white; border:2px solid #e1e5e9;
+    color:#555; padding:8px 18px; border-radius:24px;
+    font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s;
+    font-family:'Montserrat',sans-serif; user-select:none;
+}
+.chip:hover { border-color:#0077b5; color:#0077b5; background:#e8f4fd; }
+.chip.secili { background:#0077b5; border-color:#0077b5; color:white; }
+
+/* ── Özet Kart ───────────────────────────── */
+.ozet-kart {
+    background:white; border:1px solid #e1e5e9;
+    border-radius:14px; padding:20px; margin-top:20px;
+    border-left:4px solid #0077b5;
+}
+.ozet-kart h3 { font-size:14px; font-weight:700; color:#0077b5; margin-bottom:12px; }
+.ozet-satir { display:flex; gap:8px; font-size:13px; color:#4a5568; margin-bottom:6px; align-items:flex-start; }
+.ozet-satir span:first-child { flex-shrink:0; }
+
+/* ── Bitti Ekranı ────────────────────────── */
+.bitti-animasyon {
+    font-size:80px; text-align:center;
+    animation:bounce 0.8s ease infinite alternate;
+    display:block; margin-bottom:20px;
+}
+@keyframes bounce {
+    from { transform:translateY(0); }
+    to   { transform:translateY(-12px); }
+}
+#adim-bitti { text-align:center; padding:20px 0; }
+#adim-bitti h1 { font-size:32px; }
+.bitti-butonlar { display:flex; gap:14px; justify-content:center; margin-top:32px; flex-wrap:wrap; }
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width:600px) {
+    .form-row-2 { flex-direction:column; gap:0; }
+    .adim h1 { font-size:22px; }
+    .bitti-butonlar { flex-direction:column; }
+    .btn-ileri, .btn-tamamla { padding:12px 24px; }
+}

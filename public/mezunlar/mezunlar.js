@@ -5,9 +5,10 @@ sayfaAuthKontrol(true);
 document.addEventListener('DOMContentLoaded', () => { navBaslat(); logoutBaslat(); });
 
 const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
+let tumMezunlar = [];
 
 const AUTH_URL = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth'; // mezunlar listesi için
-const token    = localStorage.getItem('token');
+const token    = localStorage.getItem('token') || sessionStorage.getItem('token');
 
 async function mezunlariGetir(arama = '', tip = '') {
     try {
@@ -85,6 +86,7 @@ async function listele() {
     grid.innerHTML = '<div style="padding:40px;text-align:center;color:#a0aec0;">Yükleniyor...</div>';
 
     let liste = await mezunlariGetir(aramaVal, tip);
+    tumMezunlar = [];
 
     // Bölüm filtresi (frontend'de yap, backend'de alan yok)
     const bolum = document.getElementById('bolumFiltre').value;
@@ -100,6 +102,7 @@ async function listele() {
         bosDurum.style.display = 'block';
     } else {
         bosDurum.style.display = 'none';
+        tumMezunlar = liste;
         grid.innerHTML = liste.map(mezunKartiOlustur).join('');
     }
 
@@ -201,8 +204,7 @@ window.mezunDetayAc = async function(id) {
 
 // ── Mesaj Gönder ─────────────────────────────────────
 window.mezunaMesajGonder = function(id) {
-    const mezunlar = mezunlariGetir();
-    const m = mezunlar.find(x => x.id == id || x._id == id);
+    const m = tumMezunlar.find(x => (x.id == id || x._id == id));
     if (!m) return;
 
     // Seçilen mezunu sessionStorage'e kaydet (sayfayı açmadan önce)
@@ -211,7 +213,7 @@ window.mezunaMesajGonder = function(id) {
         isim: m.ad || m.isim || '',
         soyisim: m.soyad || m.soyisim || '',
         email: m.email || '',
-        rol: m.rol || m.tip === 'ogrenci' ? 'Öğrenci' : 'Mezun'
+        rol: (m.rol || m.tip) === 'ogrenci' ? 'Öğrenci' : 'Mezun'
     };
     sessionStorage.setItem('secilenMezunMesaj', JSON.stringify(secilenMezun));
 

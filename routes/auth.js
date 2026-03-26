@@ -94,17 +94,24 @@ router.post('/kayit', girisLimiter, async (req, res, next) => {
         // Token oluştur (limited süreli, email doğrulama gerekli)
         const token = tokenOlustur(yeniKullanici._id);
 
+        // Kayıt sonrası yönlendirme
+        let yonlendirme;
+        if (rol === 'isveren') {
+            yonlendirme = '/profil_doldurma_isveren/profil_doldurma_isveren.html';
+        } else if (rol === 'mezun') {
+            yonlendirme = '/profil_doldurma/profil_doldurma.html';
+        }
+
         res.json({
             basarili: true,
-            mesaj: 'Kayıt başarılı! Lütfen email adresinize gelen doğrulama kodunu girin.',
+            mesaj: 'Kayıt başarılı! Lütfen profilinizi tamamlayın.',
+            yonlendirme,
             token,
             emailVerificationRequired: true,
             kullanici: {
                 id: yeniKullanici._id,
                 email: yeniKullanici.email,
                 rol: yeniKullanici.rol,
-                isim: yeniKullanici.isim,
-                soyisim: yeniKullanici.soyisim,
                 profilTamamlandi: yeniKullanici.profilTamamlandi,
                 emailVerified: yeniKullanici.emailVerified
             }
@@ -298,15 +305,24 @@ router.post('/profil-tamamla', authMiddleware, async (req, res, next) => {
         const telefonCheck = validator.validatePhone(veri.iletisim?.telefon, false);
         if (!telefonCheck.valid) return res.status(400).json({ basarili: false, mesaj: telefonCheck.error });
         
+        const sirketAdi = validator.sanitizeString(veri.sirketAdi || veri.ad);
+        const calisanSayisi = validator.sanitizeString(veri.calisanSayisi);
+
         const kullanici = await User.findByIdAndUpdate(req.kullanici._id, {
             profilTamamlandi: true,
-            isim: validator.sanitizeString(veri.ad), 
+            isim: sirketAdi || validator.sanitizeString(veri.ad),
             soyisim: validator.sanitizeString(veri.soyad),
             rol: veri.tip === 'ogrenci' ? 'ogrenci' : (req.kullanici.rol === 'isveren' ? 'isveren' : 'mezun'),
             unvan: validator.sanitizeString(veri.unvan), 
             konum: validator.sanitizeString(veri.konum), 
             hakkimda: validator.sanitizeString(veri.hakkimda),
             telefon: veri.iletisim?.telefon ? String(veri.iletisim.telefon).substring(0, 20) : '',
+            sirketAdi,
+            adres: validator.sanitizeString(veri.adres),
+            slogan: validator.sanitizeString(veri.slogan),
+            calisanSayisi,
+            isTurleri: Array.isArray(veri.isTurleri) ? veri.isTurleri.map(x => validator.sanitizeString(x)).filter(Boolean) : [],
+            bolumler: Array.isArray(veri.bolumler) ? veri.bolumler.map(x => validator.sanitizeString(x)).filter(Boolean) : [],
             sosyalMedya: { 
                 linkedin: validator.sanitizeString(veri.iletisim?.linkedin) || '', 
                 github: validator.sanitizeString(veri.iletisim?.github) || '', 
@@ -325,6 +341,7 @@ router.post('/profil-tamamla', authMiddleware, async (req, res, next) => {
                 email: kullanici.email, 
                 rol: kullanici.rol,
                 isim: kullanici.isim, 
+                sirketAdi: kullanici.sirketAdi,
                 soyisim: kullanici.soyisim, 
                 profilTamamlandi: kullanici.profilTamamlandi
             }
@@ -357,6 +374,20 @@ router.put('/profil-guncelle', authMiddleware, async (req, res, next) => {
         if (veri.unvan    !== undefined) guncelleme.unvan    = validator.sanitizeString(veri.unvan);
         if (veri.konum    !== undefined) guncelleme.konum    = validator.sanitizeString(veri.konum);
         if (veri.hakkimda !== undefined) guncelleme.hakkimda = validator.sanitizeString(veri.hakkimda);
+        if (veri.sirketAdi !== undefined) guncelleme.sirketAdi = validator.sanitizeString(veri.sirketAdi);
+        if (veri.adres !== undefined) guncelleme.adres = validator.sanitizeString(veri.adres);
+        if (veri.slogan !== undefined) guncelleme.slogan = validator.sanitizeString(veri.slogan);
+        if (veri.calisanSayisi !== undefined) guncelleme.calisanSayisi = validator.sanitizeString(veri.calisanSayisi);
+        if (veri.isTurleri !== undefined) {
+            guncelleme.isTurleri = Array.isArray(veri.isTurleri)
+                ? veri.isTurleri.map(x => validator.sanitizeString(x)).filter(Boolean)
+                : [];
+        }
+        if (veri.bolumler !== undefined) {
+            guncelleme.bolumler = Array.isArray(veri.bolumler)
+                ? veri.bolumler.map(x => validator.sanitizeString(x)).filter(Boolean)
+                : [];
+        }
         if (veri.sosyalMedya !== undefined) guncelleme.sosyalMedya = veri.sosyalMedya;
         if (veri.egitim   !== undefined) guncelleme.egitim   = veri.egitim;
         if (veri.deneyim  !== undefined) guncelleme.deneyim  = veri.deneyim;
@@ -371,7 +402,11 @@ router.put('/profil-guncelle', authMiddleware, async (req, res, next) => {
         );
         res.json({ basarili: true, mesaj: 'Profil güncellendi.', kullanici: {
             id: kullanici._id, email: kullanici.email, rol: kullanici.rol,
-            isim: kullanici.isim, soyisim: kullanici.soyisim, profilTamamlandi: kullanici.profilTamamlandi
+            isim: kullanici.isim,
+            soyisim: kullanici.soyisim,
+            sirketAdi: kullanici.sirketAdi,
+            calisanSayisi: kullanici.calisanSayisi,
+            profilTamamlandi: kullanici.profilTamamlandi
         }});
     } catch (err) { next(err); }
 });
@@ -431,6 +466,12 @@ router.get('/profil', authMiddleware, async (req, res, next) => {
                 konum: kullanici.konum,
                 hakkimda: kullanici.hakkimda,
                 telefon: kullanici.telefon,
+                sirketAdi: kullanici.sirketAdi,
+                adres: kullanici.adres,
+                slogan: kullanici.slogan,
+                calisanSayisi: kullanici.calisanSayisi,
+                isTurleri: kullanici.isTurleri || [],
+                bolumler: kullanici.bolumler || [],
                 egitim: kullanici.egitim || [],
                 deneyim: kullanici.deneyim || [],
                 beceriler: kullanici.beceriler || [],
@@ -445,7 +486,7 @@ router.get('/profil', authMiddleware, async (req, res, next) => {
 // PUT /api/auth/profil — Kullanıcı profil bilgilerini güncelle
 router.put('/profil', authMiddleware, async (req, res, next) => {
     try {
-        const { isim, soyisim, unvan, konum, hakkimda, telefon, egitim, deneyim, beceriler, diller, sosyalMedya, profilTamamlandi } = req.body;
+        const { isim, soyisim, unvan, konum, hakkimda, telefon, sirketAdi, adres, slogan, calisanSayisi, isTurleri, bolumler, egitim, deneyim, beceriler, diller, sosyalMedya, profilTamamlandi } = req.body;
 
         const kullanici = await User.findByIdAndUpdate(
             req.user.id,
@@ -456,6 +497,12 @@ router.put('/profil', authMiddleware, async (req, res, next) => {
                 konum: konum || undefined,
                 hakkimda: hakkimda || undefined,
                 telefon: telefon || undefined,
+                sirketAdi: sirketAdi || undefined,
+                adres: adres || undefined,
+                slogan: slogan || undefined,
+                calisanSayisi: calisanSayisi || undefined,
+                isTurleri: isTurleri !== undefined ? isTurleri : undefined,
+                bolumler: bolumler !== undefined ? bolumler : undefined,
                 egitim: egitim !== undefined ? egitim : undefined,
                 deneyim: deneyim !== undefined ? deneyim : undefined,
                 beceriler: beceriler !== undefined ? beceriler : undefined,
@@ -479,6 +526,12 @@ router.put('/profil', authMiddleware, async (req, res, next) => {
                 konum: kullanici.konum,
                 hakkimda: kullanici.hakkimda,
                 telefon: kullanici.telefon,
+                sirketAdi: kullanici.sirketAdi,
+                adres: kullanici.adres,
+                slogan: kullanici.slogan,
+                calisanSayisi: kullanici.calisanSayisi,
+                isTurleri: kullanici.isTurleri || [],
+                bolumler: kullanici.bolumler || [],
                 egitim: kullanici.egitim || [],
                 deneyim: kullanici.deneyim || [],
                 beceriler: kullanici.beceriler || [],
