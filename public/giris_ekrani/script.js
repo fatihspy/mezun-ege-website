@@ -6,31 +6,22 @@ let girisMaili = '';
 let geriSayimId = null;
 let kayitRol  = 'mezun';  // Kayıt formunda seçili rol
 
-// ── Zaten giriş yapıldıysa yönlendir ─────────────────
-const mevcutToken = localStorage.getItem('token');
-const beniHatirlaAyar = localStorage.getItem('beniHatirla');
-if (mevcutToken && beniHatirlaAyar === 'false') {
-    sessionStorage.setItem('token', mevcutToken);
-}
-const aktifToken = mevcutToken || sessionStorage.getItem('token');
-if (aktifToken) {
-    fetch(`${API_URL}/ben`, { headers: { 'Authorization': `Bearer ${aktifToken}` } })
-        .then(r => r.json())
-        .then(veri => {
-            if (veri.basarili) {
-                const profilTamamlandi = veri.kullanici.profilTamamlandi || localStorage.getItem('profilTamamlandi') === 'true';
-                if (profilTamamlandi) {
-                    localStorage.setItem('profilTamamlandi', 'true');
-                } else {
-                    localStorage.removeItem('profilTamamlandi');
-                }
-                localStorage.setItem('kullanici', JSON.stringify(veri.kullanici));
-                yonlendir(veri.kullanici.rol, profilTamamlandi);
+// ── Zaten giriş yapıldıysa yönlendir (cookie-based auth) ─────────────────
+fetch(`${API_URL}/ben`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(veri => {
+        if (veri.basarili) {
+            const profilTamamlandi = veri.kullanici.profilTamamlandi || localStorage.getItem('profilTamamlandi') === 'true';
+            if (profilTamamlandi) {
+                localStorage.setItem('profilTamamlandi', 'true');
             } else {
-                localStorage.removeItem('token');
+                localStorage.removeItem('profilTamamlandi');
             }
-        }).catch(() => {});
-}
+            localStorage.setItem('kullanici', JSON.stringify(veri.kullanici));
+            yonlendir(veri.kullanici.rol, profilTamamlandi);
+        }
+    }).catch(() => {});
+
 
 // ── Sekme Geçişi ──────────────────────────────────────
 window.sekmeGec = function(rol) {
@@ -113,10 +104,13 @@ window.rolSecKayit = function(rol) {
 // ── Kayıt Şifre Toggle ─────────────────────────────────
 window.kayitSifreyiToggleEt = function(inputId) {
     const input = document.getElementById(inputId);
+    const btn = input.parentElement.querySelector('button.toggle-sifre');
     if (input.type === 'password') {
         input.type = 'text';
+        if (btn) btn.textContent = '🙈';
     } else {
         input.type = 'password';
+        if (btn) btn.textContent = '👁️';
     }
 };
 
@@ -166,15 +160,15 @@ async function mailGonder() {
 }
 
 // ── Şifre Toggling ────────────────────────────────────
-window.sifreyiToggleEt = function() {
-    const input = document.getElementById('sifreInput');
-    const btn   = document.querySelector('.toggle-sifre');
+window.sifreyiToggleEt = function(inputId) {
+    const input = inputId ? document.getElementById(inputId) : document.getElementById('sifreInput');
+    const btn = input.parentElement.querySelector('button.toggle-sifre');
     if (input.type === 'password') {
         input.type = 'text';
-        btn.textContent = '🙈';
+        if (btn) btn.textContent = '🙈';
     } else {
         input.type = 'password';
-        btn.textContent = '👁️';
+        if (btn) btn.textContent = '👁️';
     }
 };
 
@@ -235,7 +229,7 @@ async function girisYap() {
                 temizlenecekler.forEach(k => localStorage.removeItem(k));
             }
 
-            localStorage.setItem('token', veri.token);
+            // Server sets auth cookie; do not store token in localStorage
             localStorage.setItem('kullanici', JSON.stringify(veri.kullanici));
             localStorage.setItem('beniHatirla', beniHatirla ? 'true' : 'false');
 
@@ -253,6 +247,13 @@ async function girisYap() {
                     : (!profilTamamlandi ? '../profil_doldurma/profil_doldurma.html' : '../dashboard/dashboard.html');
                 window.location.href = hedef;
             }, 800);
+        } else if (yanit.status === 403 && veri.emailVerificationRequired) {
+            // Email doğrulanmamış — doğrulama sayfasına yönlendir
+            // server sets temp token cookie when needed
+            hataGoster(hataEl, veri.mesaj);
+            setTimeout(() => { window.location.href = '../dogrulama/dogrulama.html'; }, 1500);
+            btn.disabled = false;
+            yazi.textContent = 'Giriş Yap →';
         } else if (yanit.status === 401) {
             // 401 = Yanlış şifre VEYA şifre belirlenmeyen eski kullanıcı
             document.getElementById('sifreInput').classList.add('hatali');
@@ -306,23 +307,13 @@ async function sifreBelirleFonksiyon() {
     yazi.textContent = 'Belirleniyor...';
 
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            hataGoster(hataEl, 'Oturum bulunamadı. Lütfen giriş yapın.');
-            btn.disabled = false;
-            yazi.textContent = 'Şifreyi Belirle →';
-            return;
-        }
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const yanit = await fetch(`${API_URL}/sifre-belirle`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ yeniSifre }),
             signal: controller.signal
         });
@@ -445,8 +436,7 @@ async function sifreKoduDogrula() {
         const veri = await yanit.json();
 
         if (veri.basarili) {
-            // Token sakla (temporary)
-            localStorage.setItem('token', veri.token);
+            // Server sets temp token cookie; no localStorage token needed
             
             adimGec('sifre-belirle');
             document.getElementById('mailOzet2').innerHTML = `📧 <strong>${email}</strong>`;
@@ -585,8 +575,7 @@ async function kayitYap() {
             ];
             temizlenecekler.forEach(k => localStorage.removeItem(k));
 
-            // Token ve kullanıcıyı kaydet
-            localStorage.setItem('token', veri.token);
+            // Server sets auth cookie; store only user info in localStorage
             localStorage.setItem('kullanici', JSON.stringify(veri.kullanici));
             localStorage.setItem('email', veri.kullanici.email);
             localStorage.setItem('beniHatirla', 'true');

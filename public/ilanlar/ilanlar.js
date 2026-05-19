@@ -18,14 +18,11 @@ let tumIlanlar = [];
 let basvurulanIlanlar = []; // Kullanıcının başvurduğu ilanların ID'leri
 
 async function verileriYukle() {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
     
     try {
         // 1. Tüm aktif ilanları getir
-        const resIlanlar = await fetch(`${API_URL}/ilanlar`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const resIlanlar = await fetch(`${API_URL}/ilanlar`, { credentials: 'include' });
         const veriIlanlar = await resIlanlar.json();
         if (veriIlanlar.basarili) {
             tumIlanlar = veriIlanlar.ilanlar;
@@ -33,9 +30,7 @@ async function verileriYukle() {
 
         // 2. Eğer kullanıcı işveren değilse, başvurduğu ilanları getir
         if (!kullanici.rol?.includes('isveren')) {
-            const resBasvuru = await fetch(`${API_URL}/basvurular/benimkiler`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const resBasvuru = await fetch(`${API_URL}/basvurular/benimkiler`, { credentials: 'include' });
             const veriBasvuru = await resBasvuru.json();
             if (veriBasvuru.basarili) {
                 // Sadece ilan ID'lerini bir diziye atıyoruz
@@ -80,16 +75,16 @@ function ilanKartiOlustur(ilan) {
                 <div class="sirket-logo">${sirketHarfi(ilan.sirket)}</div>
                 <div style="display:flex;gap:6px;align-items:center;">
                     ${basvuruldu ? '<span class="basvuruldu-badge">✅ Başvuruldu</span>' : ''}
-                    <span class="ilan-tur-badge ${tur.cls}">${tur.label}</span>
+                    <span class="ilan-tur-badge ${tur.cls}">${escapeHtml(tur.label)}</span>
                 </div>
             </div>
-            <div class="ilan-pozisyon">${ilan.pozisyon}</div>
-            <div class="ilan-sirket">${ilan.sirket}</div>
+            <div class="ilan-pozisyon">${escapeHtml(ilan.pozisyon)}</div>
+            <div class="ilan-sirket">${escapeHtml(ilan.sirket)}</div>
             <div class="ilan-meta">
-                <span class="meta-chip">📍 ${ilan.konum || 'Belirtilmemiş'}</span>
-                ${ilan.maas ? `<span class="meta-chip">💰 ${ilan.maas}</span>` : ''}
+                <span class="meta-chip">📍 ${escapeHtml(ilan.konum || 'Belirtilmemiş')}</span>
+                ${ilan.maas ? `<span class="meta-chip">💰 ${escapeHtml(ilan.maas)}</span>` : ''}
             </div>
-            <div class="ilan-aciklama">${ilan.aciklama}</div>
+            <div class="ilan-aciklama">${escapeHtml(ilan.aciklama)}</div>
             <div class="kart-alt">
                 <span class="ilan-tarih">📅 ${tarihFormatla(ilan.olusturmaTarihi)}</span>
                 ${isverenMi ? '' : (basvuruldu
@@ -193,32 +188,37 @@ window.ilanDetayAc = function(id) {
         <div class="detay-sirket-bilgi">
             <div class="detay-logo">${sirketHarfi(ilan.sirket)}</div>
             <div>
-                <div class="detay-sirket-adi">${ilan.sirket}</div>
-                <div class="detay-konum">📍 ${ilan.konum || 'Belirtilmemiş'}</div>
+                <div class="detay-sirket-adi">${escapeHtml(ilan.sirket)}</div>
+                <div class="detay-konum">📍 ${escapeHtml(ilan.konum || 'Belirtilmemiş')}</div>
             </div>
         </div>
         <div class="detay-badges" style="margin-bottom:20px;">
-            <span class="detay-badge">${tur.label}</span>
-            ${ilan.maas ? `<span class="detay-badge">💰 ${ilan.maas}</span>` : ''}
+            <span class="detay-badge">${escapeHtml(tur.label)}</span>
+            ${ilan.maas ? `<span class="detay-badge">💰 ${escapeHtml(ilan.maas)}</span>` : ''}
             <span class="detay-badge">📅 ${tarihFormatla(ilan.olusturmaTarihi)}</span>
         </div>
         <div class="detay-section">
             <h4>İlan Açıklaması</h4>
-            <p>${ilan.aciklama}</p>
+            <p>${escapeHtml(ilan.aciklama)}</p>
         </div>
         ${ilan.nitelikler ? `
         <div class="detay-section">
             <h4>Aranan Nitelikler</h4>
-            <p>${ilan.nitelikler}</p>
+            <p>${escapeHtml(ilan.nitelikler)}</p>
         </div>` : ''}
     `;
 
-    // İşveren ise başvuru butonunu gizle
-    const basVurBtn = document.getElementById('basVurBtn');
-    if (isverenMi || basvuruldu) {
+      const basVurBtn = document.getElementById('basVurBtn');
+    const basvurulduGosterge = document.getElementById('basvurulduGosterge');
+    if (isverenMi) {
         basVurBtn.style.display = 'none';
+        basvurulduGosterge.style.display = 'none';
+    } else if (basvuruldu) {
+        basVurBtn.style.display = 'none';
+        basvurulduGosterge.style.display = 'inline-flex';
     } else {
         basVurBtn.style.display = 'inline-block';
+        basvurulduGosterge.style.display = 'none';
     }
 
     document.getElementById('detay-modal').classList.add('show');
@@ -289,15 +289,11 @@ window.basvurYap = function(id) {
 document.getElementById('basvuruTamam').addEventListener('click', async () => {
     const ilanId = aktifIlanId;
     const not = document.getElementById('basvuruNot').value.trim();
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
     try {
         const res = await fetch(`${API_URL}/basvurular/${ilanId}`, {
             method: 'POST',
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json' 
-            },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ onYazi: not, cvBase64: cvBase64 }) 
         });
         const data = await res.json();
@@ -365,15 +361,11 @@ document.getElementById('ilanKaydet').addEventListener('click', async () => {
         nitelikler: document.getElementById('nitelikler').value.trim()
     };
 
-    const token = localStorage.getItem('token');
-    
     try {
         const res = await fetch(`${API_URL}/ilanlar`, {
             method: 'POST',
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const data = await res.json();

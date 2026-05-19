@@ -323,6 +323,10 @@ body { background:#f0f4f8; color:#333; }
     flex:1; display:flex; flex-direction:column;
     overflow:hidden;
 }
+#isvChatAktif {
+    flex:1; display:flex; flex-direction:column;
+    overflow:hidden; min-height:0;
+}
 .isv-chat-bos {
     flex:1; display:flex; flex-direction:column;
     align-items:center; justify-content:center;

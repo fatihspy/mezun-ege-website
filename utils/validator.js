@@ -18,13 +18,36 @@ const validator = {
     return name && name.length >= 2 && name.length <= 50;
   },
 
-  // String sanitization
-  sanitizeString: (str) => {
-    if (!str) return '';
+  // String sanitization — varsayılan max 500 karakter
+  sanitizeString: (str, maxLen = 500) => {
+    if (str === null || str === undefined) return '';
+    if (typeof str !== 'string') {
+      try {
+        str = String(str);
+      } catch {
+        return '';
+      }
+    }
     return str
       .trim()
       .replace(/[<>]/g, '')
-      .slice(0, 1000); // Max 1000 karakter
+      .slice(0, maxLen);
+  },
+
+  // Uzun metin alanları için (hakkımda, ilan açıklaması vb.)
+  sanitizeLongText: (str, maxLen = 3000) => {
+    if (str === null || str === undefined) return '';
+    if (typeof str !== 'string') {
+      try {
+        str = String(str);
+      } catch {
+        return '';
+      }
+    }
+    return str
+      .trim()
+      .replace(/[<>]/g, '')
+      .slice(0, maxLen);
   },
 
   // Pozisyon validasyonu

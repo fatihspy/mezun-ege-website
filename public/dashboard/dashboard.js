@@ -4,11 +4,9 @@ const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://loca
 let profilCache = null;
 async function getProfilData() {
     if (profilCache) return profilCache;
-    const token = localStorage.getItem('token');
     try {
-        const res = await fetch(`${API_URL}/profil`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const apiUrl = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://localhost:3000/api';
+        const res = await fetch(`${apiUrl}/profil/ben`, { credentials: 'include' });
         const result = await res.json();
         if (result.basarili) {
             profilCache = result.profil;
@@ -62,24 +60,13 @@ async function kullaniciAdiGetir() {
 
 // ── Gerçek Auth Kontrolü ───────────────────────────────
 (async function() {
-    const token = localStorage.getItem('token');
-    if (!token) { 
-        window.location.href = '../giris_ekrani/index.html'; 
-        return; 
-    }
-
     try {
-        // Token'ı backend'e sorarak doğrula
-        const res = await fetch(`${API_URL}/ben`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${API_URL}/ben`, { credentials: 'include' });
         const veri = await res.json();
-        
         if (!veri.basarili) {
-            localStorage.removeItem('token');
             window.location.href = '../giris_ekrani/index.html';
         }
-    } catch (e) {
+    } catch(e) {
         console.error("Sunucu bağlantı hatası:", e);
     }
 })();
@@ -149,16 +136,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ── Özet Kartları — Backend'den çek ───────────────
     const apiUrl  = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL  : 'http://localhost:3000/api';
-    const tkn     = localStorage.getItem('token');
-    const headers = { 'Authorization': `Bearer ${tkn}` };
-
-    // Paralel çek
+    // Paralel çek (cookie-based auth)
     let veriIlanlar = null, veriBasvurular = null, veriMesajlar = null;
     try {
         const [r1, r2, r3] = await Promise.allSettled([
-            fetch(`${apiUrl}/ilanlar`,               { headers }),
-            fetch(`${apiUrl}/basvurular/benimkiler`,  { headers }),
-            fetch(`${apiUrl}/mesajlar/konusmalar`,    { headers })
+            fetch(`${apiUrl}/ilanlar`,               { credentials: 'include' }),
+            fetch(`${apiUrl}/basvurular/benimkiler`,  { credentials: 'include' }),
+            fetch(`${apiUrl}/mesajlar/konusmalar`,    { credentials: 'include' })
         ]);
         if (r1.status === 'fulfilled' && r1.value.ok) veriIlanlar    = await r1.value.json();
         if (r2.status === 'fulfilled' && r2.value.ok) veriBasvurular = await r2.value.json();
@@ -319,4 +303,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ── Nav + Logout (config.js ortak fonksiyonlar) ───
     navBaslat();
     logoutBaslat();
+
+    // navBaslat() localStorage'dan okuyup email yazabilir; profil geldikten sonra override et
+    const _navEl = document.getElementById('navUserName');
+    if (_navEl && gorunenAd) _navEl.textContent = gorunenAd;
+    const _navAv = document.getElementById('navAvatarWrap');
+    if (_navAv && !profil.avatar) _navAv.textContent = (senkronIsim || 'K').charAt(0).toUpperCase();
 });

@@ -7,15 +7,13 @@ document.addEventListener('DOMContentLoaded', () => { navBaslat(); logoutBaslat(
 const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
 let tumMezunlar = [];
 
-const AUTH_URL = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth'; // mezunlar listesi için
-const token    = localStorage.getItem('token') || sessionStorage.getItem('token');
-
+const MEZUNLAR_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL + '/mezunlar' : 'http://localhost:3000/api/mezunlar';
 async function mezunlariGetir(arama = '', tip = '') {
     try {
-        let url = `${AUTH_URL}/mezunlar?`;
+        let url = `${MEZUNLAR_URL}?`;
         if (arama) url += `arama=${encodeURIComponent(arama)}&`;
         if (tip)   url += `tip=${tip}`;
-        const res  = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res  = await fetch(url, { credentials: 'include' });
         const veri = await res.json();
         return veri.basarili ? veri.mezunlar : [];
     } catch (e) {
@@ -52,20 +50,20 @@ function mezunKartiOlustur(m) {
             <div class="kart-ust">
                 <div class="kart-avatar">
                     ${m._avatar
-                        ? `<img src="${m._avatar}" alt="${tam}">`
+                        ? `<img src="${escapeHtml(m._avatar)}" alt="${escapeHtml(tam)}">`
                         : avatarHarfi(m.isim, m.soyisim)
                     }
                 </div>
                 <div>
-                    <div class="kart-isim">${tam}</div>
-                    <div class="kart-unvan">${m.unvan || ''}</div>
+                    <div class="kart-isim">${escapeHtml(tam)}</div>
+                    <div class="kart-unvan">${escapeHtml(m.unvan || '')}</div>
                 </div>
             </div>
             <span class="kart-tip-rozet ${tipCls}">${tipYazi}</span>
             ${bolum ? `<div class="kart-bolum">🎓 ${bolum}${mezYil ? ' · ' + mezYil : ''}</div>` : ''}
-            ${m.konum ? `<div class="kart-konum">📍 ${m.konum}</div>` : ''}
+            ${m.konum ? `<div class="kart-konum">📍 ${escapeHtml(m.konum)}</div>` : ''}
             <div class="kart-beceriler">
-                ${beceriler.map(b => `<span class="beceri-chip">${typeof b === 'object' ? b.ad : b}</span>`).join('')}
+                ${beceriler.map(b => `<span class="beceri-chip">${escapeHtml(typeof b === 'object' ? b.ad : b)}</span>`).join('')}
                 ${fazla > 0 ? `<span class="beceri-chip beceri-chip-fazla">+${fazla}</span>` : ''}
             </div>
             <div class="kart-alt">

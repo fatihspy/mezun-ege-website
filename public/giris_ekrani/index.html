@@ -8,6 +8,7 @@
     <title>Giriş - Egemyo Mezun</title>
     <script src="../validasyon.js"></script>
     <script src="../config.js"></script>
+    <script src="../utils/common.js"></script>
 </head>
 <body>
     <div class="giris-wrap">
@@ -151,7 +152,7 @@
                             <input type="password" id="sifreInput" 
                                 placeholder="Şifrenizi girin"
                                 autocomplete="current-password">
-                            <button type="button" class="toggle-sifre" onclick="sifreyiToggleEt()">👁️</button>
+                            <button type="button" class="toggle-sifre" onclick="sifreyiToggleEt('sifreInput')">👁️</button>
                         </div>
                         <div class="sifre-guclu">
                             <span id="sifreGucluBilgi" style="font-size: 0.85em; color: #999;">
@@ -229,7 +230,7 @@
                             <input type="password" id="yeniSifreInput" 
                                 placeholder="Min. 8 karakter, 1 büyük harf, 1 rakam"
                                 autocomplete="new-password">
-                            <button type="button" class="toggle-sifre" onclick="sifreyiToggleEt()">👁️</button>
+                            <button type="button" class="toggle-sifre" onclick="sifreyiToggleEt('yeniSifreInput')">👁️</button>
                         </div>
                         <div class="sifre-guclu">
                             <span id="sifreGucluBilgi2" style="font-size: 0.85em; color: #999;">

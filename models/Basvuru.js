@@ -6,7 +6,7 @@ const basvuruSchema = new mongoose.Schema({
   isveren:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   onYazi:   { type: String, trim: true },
   cvVar:    { type: Boolean, default: false },
-  cvBase64: { type: String, default: null },
+  cvUrl:    { type: String, default: null },
   durum:    { type: String, enum: ['beklemede', 'gorusme', 'reddedildi', 'kabul'], default: 'beklemede' },
   basvuruTarihi: { type: Date, default: Date.now }
 });

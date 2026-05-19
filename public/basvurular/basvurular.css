@@ -232,3 +232,26 @@ body { background:#f3f2ef; color:#333; line-height:1.6; }
     .main-content { padding:16px; }
     
 }
+
+.geri-cek-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e53e3e;
+    color: #e53e3e;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.geri-cek-btn:hover {
+    background: #e53e3e;
+    color: white;
+    transform: scale(1.03);
+}
+.geri-cek-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}

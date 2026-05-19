@@ -3,6 +3,7 @@ const express    = require('express');
 const mongoose   = require('mongoose');
 const cors       = require('cors');
 const helmet     = require('helmet');
+const cookieParser = require('cookie-parser');
 const path       = require('path');
 const logger     = require('./utils/logger');
 
@@ -40,36 +41,53 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // ── CORS ──────────────────────────────────────────────
+// ALLOWED_ORIGIN çevre değişkeni virgülle ayrılmış origin listesi veya '*' olabilir.
 const izinliOriginler = process.env.ALLOWED_ORIGIN
-  ? process.env.ALLOWED_ORIGIN.split(',').map(o => o.trim())
-  : [];
+  ? process.env.ALLOWED_ORIGIN.split(',').map(o => o.trim()).filter(Boolean)
+  : ['http://localhost:3000'];
 
 app.use(cors({
   origin: (origin, callback) => {
-    // ALLOWED_ORIGIN=* ise herkese izin ver (sadece geliştirme)
-    if (process.env.ALLOWED_ORIGIN === '*') return callback(null, true);
-    // Origin yoksa (curl, Postman, sunucu içi istek) izin ver
+    // Eğer ALLOWED_ORIGIN='*' ise yalnızca development ortamında izin ver
+    if (process.env.ALLOWED_ORIGIN === '*') {
+      if (process.env.NODE_ENV === 'production') {
+        return callback(new Error('CORS wildcard (*) production ortamında izinli değil. Lütfen ALLOWED_ORIGIN ayarını güncelleyin.'));
+      }
+      return callback(null, true);
+    }
+
+    // Origin yoksa (server-side veya curl gibi) izin ver
     if (!origin) return callback(null, true);
+
+    // Normal listeleme
     if (izinliOriginler.includes(origin)) return callback(null, true);
+
     callback(new Error(`CORS: ${origin} adresine izin verilmiyor.`));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
+  ,credentials: true
 }));
 
 // ── Body parser ───────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
+// Cookie parser for httpOnly auth cookies
+app.use(cookieParser());
 
 // ── Statik dosyalar ───────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public', 'giris_ekrani')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ────────────────────────────────────────
 app.use('/api/auth',       require('./routes/auth'));
+app.use('/api/profil',     require('./routes/profil'));
+app.use('/api/mezunlar',   require('./routes/mezunlar'));
 app.use('/api/ilanlar',    require('./routes/ilanlar'));
 app.use('/api/basvurular', require('./routes/basvurular'));
 app.use('/api/mesajlar',   require('./routes/mesajlar'));
 app.use('/api/dosya',      require('./routes/dosya'));
+app.use('/api/bildirimler', require('./routes/bildirimler'));
 
 // ── Ana sayfa ─────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -109,10 +127,25 @@ mongoose.connect(process.env.MONGODB_URI, {
   socketTimeoutMS: 45000,
   serverSelectionTimeoutMS: 5000,
 })
-  .then(() => {
+  .then(async () => {
     logger.info(`📦 MongoDB bağlantısı başarılı`);
     logger.info(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
-    
+
+    // Validate mailer before starting server in production
+    try {
+      const mailer = require('./utils/mailer');
+      await mailer.verifyMailer();
+      logger.info('SMTP konfigürasyonu doğrulandı.');
+    } catch (err) {
+      logger.error('SMTP doğrulama hatası:', err && err.message ? err.message : err);
+      if (process.env.NODE_ENV === 'production') {
+        logger.error('Production ortamında SMTP doğrulama başarısız, sunucu başlatılmıyor.');
+        process.exit(1);
+      } else {
+        logger.warn('SMTP doğrulama başarısız — development ortamında devam ediliyor.');
+      }
+    }
+
     app.listen(process.env.PORT || 3000, () => {
       logger.info(`🚀 Sunucu çalışıyor: http://localhost:${process.env.PORT || 3000}`);
     });

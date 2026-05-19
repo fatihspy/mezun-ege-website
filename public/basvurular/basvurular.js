@@ -34,10 +34,9 @@ function tarihFormatla(tarih) {
 
 // ── Veri (Backend'den Getir) ──────────────────────────
 async function verileriYukle() {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
         const res = await fetch(`${API_URL}/basvurular/benimkiler`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include'
         });
         const veri = await res.json();
         
@@ -95,22 +94,26 @@ function listele() {
         const pozisyonAdi = bsv.ilan?.pozisyon || 'Silinmiş İlan';
         const konum = bsv.ilan?.konum || 'Belirtilmemiş';
         const tur = turLabel[bsv.ilan?.tur] || bsv.ilan?.tur || 'Bilinmiyor';
+        const geriCekilebilir = bsv.durum === 'beklemede';
 
         return `
-        <div class="basvuru-kart">
+        <div class="basvuru-kart" id="kart-${bsv._id}">
             <div class="kart-logo">${sirketAdi.charAt(0).toUpperCase()}</div>
             <div class="kart-bilgi">
-                <div class="kart-pozisyon">${pozisyonAdi}</div>
-                <div class="kart-sirket">${sirketAdi}</div>
+                <div class="kart-pozisyon">${escapeHtml(pozisyonAdi)}</div>
+                <div class="kart-sirket">${escapeHtml(sirketAdi)}</div>
                 <div class="kart-meta">
-                    <span class="meta-chip">📍 ${konum}</span>
-                    <span class="meta-chip">💼 ${tur}</span>
+                    <span class="meta-chip">📍 ${escapeHtml(konum)}</span>
+                    <span class="meta-chip">💼 ${escapeHtml(tur)}</span>
                     <span class="meta-chip">📅 ${tarihFormatla(bsv.basvuruTarihi)}</span>
                 </div>
             </div>
             <div class="kart-sag">
                 <span class="durum-badge durum-${bsv.durum}" style="cursor:default;">${durumLabel[bsv.durum]}</span>
-                <span class="kart-tarih">${tarihFormatla(bsv.basvuruTarihi)}</span>
+                ${geriCekilebilir
+                    ? `<button class="geri-cek-btn" onclick="geriCekOnay('${bsv._id}', '${escapeHtml(pozisyonAdi)}', '${escapeHtml(sirketAdi)}')">Geri Çek</button>`
+                    : `<span class="kart-tarih">${tarihFormatla(bsv.basvuruTarihi)}</span>`
+                }
             </div>
         </div>
         `;
@@ -131,6 +134,49 @@ document.querySelectorAll('.bant').forEach(bant => {
 
 document.getElementById('aramaInput').addEventListener('input', listele);
 document.getElementById('siralaFiltre').addEventListener('change', listele);
+
+// ── Geri Çekme ────────────────────────────────────────
+let geriCekilecekId = null;
+
+window.geriCekOnay = function(id, pozisyon, sirket) {
+    geriCekilecekId = id;
+    document.getElementById('geriCekPozisyon').textContent = pozisyon;
+    document.getElementById('geriCekSirket').textContent = sirket;
+    document.getElementById('geriCek-modal').classList.add('show');
+};
+
+document.getElementById('geriCekOnayla').addEventListener('click', async () => {
+    if (!geriCekilecekId) return;
+    const btn = document.getElementById('geriCekOnayla');
+    btn.disabled = true;
+    btn.textContent = 'Geri çekiliyor...';
+
+    try {
+        const res = await fetch(`${API_URL}/basvurular/${geriCekilecekId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        const veri = await res.json();
+        if (veri.basarili) {
+            tumBasvurular = tumBasvurular.filter(b => b._id !== geriCekilecekId);
+            listele();
+            document.getElementById('geriCek-modal').classList.remove('show');
+        } else {
+            alert(veri.mesaj || 'Bir hata oluştu.');
+        }
+    } catch (e) {
+        alert('Bağlantı hatası, lütfen tekrar deneyin.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Evet, Geri Çek';
+        geriCekilecekId = null;
+    }
+});
+
+document.getElementById('geriCekIptal').addEventListener('click', () => {
+    document.getElementById('geriCek-modal').classList.remove('show');
+    geriCekilecekId = null;
+});
 
 // ── İlk Yükleme ───────────────────────────────────────
 verileriYukle();

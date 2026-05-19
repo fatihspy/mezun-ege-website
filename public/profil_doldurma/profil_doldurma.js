@@ -1,15 +1,9 @@
 // Auth kontrolü — token yoksa giriş sayfasına, profil tamansa dashboard'a
 (async function() {
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = '../giris_ekrani/index.html'; return; }
-    // Backend'den kontrol et
     try {
-        const res = await fetch(CONFIG.AUTH_URL + '/ben', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(CONFIG.AUTH_URL + '/ben', { credentials: 'include' });
         const veriRes = await res.json();
         if (!veriRes.basarili) {
-            localStorage.removeItem('token');
             window.location.href = '../giris_ekrani/index.html';
             return;
         }
@@ -19,7 +13,7 @@
             window.location.href = '../dashboard/dashboard.html';
         }
     } catch(e) {
-        // Ağ hatası — sadece token varlığına bak
+        // Ağ hatası — sadece token yoksa yönlendirilmeyecek
         if (localStorage.getItem('profilTamamlandi') === 'true') {
             window.location.href = '../dashboard/dashboard.html';
         }
@@ -343,12 +337,13 @@ document.getElementById('tamamlaBtn').addEventListener('click', async () => {
 
     // Backend'e gönderilecek profil bilgileri
     const profilGuncelleme = {
-        isim:     veri.ad,
-        soyisim:  veri.soyad,
+        ad:       veri.ad,
+        soyad:    veri.soyad,
         unvan:    veri.unvan || (veri.tip === 'ogrenci' ? `${veri.bolum} Öğrencisi` : `${veri.bolum} Mezunu`),
         konum:    veri.konum,
         hakkimda: veri.hakkimda,
         telefon:  veri.telefon,
+        tip:      veri.tip,
         egitim: [{
             okul:       document.getElementById('s2Okul') ? document.getElementById('s2Okul').value.trim() || 'Ege Meslek Yüksekokulu' : 'Ege Meslek Yüksekokulu',
             bolum:      veri.bolum,
@@ -359,37 +354,30 @@ document.getElementById('tamamlaBtn').addEventListener('click', async () => {
         deneyim:      veri.deneyimler,
         beceriler:    veri.beceriler,
         diller:       veri.diller,
-        sosyalMedya: {
+        iletisim: {
+            telefon:  veri.telefon,
             linkedin: veri.linkedin,
             web:      veri.web,
             github:   veri.github
-        },
-        profilTamamlandi: true
+        }
     };
-
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = '../giris_ekrani/index.html'; return; }
 
     const tamamlaBtn = document.getElementById('tamamlaBtn');
     tamamlaBtn.disabled = true;
     tamamlaBtn.textContent = 'Kaydediliyor...';
 
     try {
-        const response = await fetch(CONFIG.AUTH_URL + '/profil', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+        const response = await fetch(CONFIG.API_URL + '/profil/tamamla', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(profilGuncelleme)
         });
         const result = await response.json();
 
         if (result.basarili) {
             // ✅ localStorage'ı güncellenmiş kullanıcı bilgisi ile update et
-            if (result.profil) {
-                localStorage.setItem('kullanici', JSON.stringify(result.profil));
-            } else if (result.kullanici) {
+            if (result.kullanici) {
                 localStorage.setItem('kullanici', JSON.stringify(result.kullanici));
             }
             
@@ -426,13 +414,12 @@ document.getElementById('tamamlaBtn').addEventListener('click', async () => {
 // ── Atla Butonu ───────────────────────────────────────
 document.getElementById('atlaBtn').addEventListener('click', async () => {
     // Backend'e minimal profil kaydı yap (isim/soyisim en azından gönder)
-    const token = localStorage.getItem('token');
     const kullaniciLocal = JSON.parse(localStorage.getItem('kullanici') || '{}');
-    if (token && (kullaniciLocal.isim || document.getElementById('s1Ad').value.trim())) {
+    if (kullaniciLocal.isim || document.getElementById('s1Ad').value.trim()) {
         try {
-            await fetch(CONFIG.AUTH_URL + '/profil', {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            await fetch(CONFIG.API_URL + '/profil/guncelle', {
+                method: 'PUT', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     isim: document.getElementById('s1Ad').value.trim() || kullaniciLocal.isim,
                     soyisim: document.getElementById('s1Soyad').value.trim() || kullaniciLocal.soyisim,

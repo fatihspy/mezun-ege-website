@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  rol: { type: String, enum: ['mezun', 'ogrenci', 'isveren', 'isveren_adayi'], required: true },
+  rol: { type: String, enum: ['mezun', 'ogrenci', 'isveren'], required: true },
   password: { type: String, required: true },
   isim: { type: String, trim: true },
   soyisim: { type: String, trim: true },
@@ -64,5 +64,8 @@ const userSchema = new mongoose.Schema({
     web: String
   }
 });
+
+// Compound index to speed up queries for graduated lists (rol + profilTamamlandi)
+userSchema.index({ rol: 1, profilTamamlandi: 1 });
 
 module.exports = mongoose.model('User', userSchema);

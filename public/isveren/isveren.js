@@ -1,17 +1,23 @@
 const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://localhost:3000/api';
 
 // Auth kontrolü — sadece işveren girebilir
-(function() {
-    const token     = localStorage.getItem('token') || sessionStorage.getItem('token');
+(async function() {
     const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
-    if (!token)                              { window.location.href = '../giris_ekrani/index.html'; return; }
-    if (!kullanici.rol?.includes('isveren')) { window.location.href = '../dashboard/dashboard.html'; }
+    try {
+        const res = await fetch(CONFIG.AUTH_URL + '/ben', { credentials: 'include' });
+        const veri = await res.json();
+        if (!veri.basarili) { window.location.href = '../giris_ekrani/index.html'; return; }
+        if (!kullanici.rol?.includes('isveren')) { window.location.href = '../dashboard/dashboard.html'; }
+    } catch(e) {
+        // ağ hatası durumunda yönlendirilmeyebilir
+    }
 })();
 
 document.addEventListener('DOMContentLoaded', () => { navBaslat(); });
 
 // ── Kullanıcı & UI ────────────────────────────────────
-const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+// cookie-based auth; no local token required
+const token = null;
 let kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
 
 function aktifSirketAdi() {
@@ -50,9 +56,7 @@ document.getElementById('bugunTarih').textContent = new Date().toLocaleDateStrin
 // Backend'den güncel profili çek, UI'ı güncelle
 (async function profilYukle() {
     try {
-        const res = await fetch(CONFIG.AUTH_URL + '/profil', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(CONFIG.API_URL + '/profil/ben', { credentials: 'include' });
         const veri = await res.json();
         if (veri.basarili && veri.profil) {
             const p = veri.profil;
@@ -85,19 +89,17 @@ let isvAktifKarsiId = null;
 async function verileriYukle() {
     try {
         // İlanları Çek
-const resIlanlar = await fetch(`${API_URL}/ilanlar/benimkiler`, { 
-    headers: { 'Authorization': `Bearer ${token}` } 
-});
+const resIlanlar = await fetch(`${API_URL}/ilanlar/benimkiler`, { credentials: 'include' });
         const veriIlanlar = await resIlanlar.json();
         if (veriIlanlar.basarili) isverenIlanlar = veriIlanlar.ilanlar;
 
         // Başvuruları Çek
-        const resBasvuru = await fetch(`${API_URL}/basvurular/isveren`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const resBasvuru = await fetch(`${API_URL}/basvurular/isveren`, { credentials: 'include' });
         const veriBasvuru = await resBasvuru.json();
         if (veriBasvuru.basarili) isverenBasvurular = veriBasvuru.basvurular;
 
         // Mesajları Çek
-        const resMesaj = await fetch(`${API_URL}/mesajlar/konusmalar`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const resMesaj = await fetch(`${API_URL}/mesajlar/konusmalar`, { credentials: 'include' });
         const veriMesaj = await resMesaj.json();
         if (veriMesaj.basarili) {
             tumKonusmalar = veriMesaj.konusmalar;
@@ -181,10 +183,10 @@ function dashboardYukle() {
     } else {
         sonIlanEl.innerHTML = isverenIlanlar.slice(0,4).map(i => `
             <div class="mini-satir" onclick="sayfaGec('ilanlar')">
-                <div class="mini-avatar">${i.sirket ? i.sirket.charAt(0).toUpperCase() : 'İ'}</div>
+                <div class="mini-avatar">${escapeHtml((i.sirket || '').charAt(0).toUpperCase() || 'İ')}</div>
                 <div class="mini-bilgi">
-                    <div class="mini-baslik">${i.pozisyon}</div>
-                    <div class="mini-alt">${i.konum || ''} · ${turLabel[i.tur] || ''}</div>
+                    <div class="mini-baslik">${escapeHtml(i.pozisyon)}</div>
+                    <div class="mini-alt">${escapeHtml(i.konum || '')} · ${escapeHtml(turLabel[i.tur] || '')}</div>
                 </div>
                 <span class="mini-badge ${i.aktifMi ? 'durum-kabul' : 'durum-beklemede'}">${i.aktifMi ? 'Aktif' : 'Pasif'}</span>
             </div>
@@ -199,8 +201,8 @@ function dashboardYukle() {
             <div class="mini-satir" onclick="sayfaGec('basvurular')">
                 <div class="mini-avatar" style="background:linear-gradient(135deg,#38a169,#48bb78)">${basvuranAd(b).charAt(0)}</div>
                 <div class="mini-bilgi">
-                    <div class="mini-baslik">${basvuranAd(b)}</div>
-                    <div class="mini-alt">${b.ilan?.pozisyon || 'İlan Silinmiş'}</div>
+                    <div class="mini-baslik">${escapeHtml(basvuranAd(b))}</div>
+                    <div class="mini-alt">${escapeHtml(b.ilan?.pozisyon || 'İlan Silinmiş')}</div>
                 </div>
                 <span class="mini-badge durum-${b.durum}">${durumLabel[b.durum]}</span>
             </div>
@@ -229,10 +231,10 @@ function ilanListesiYukle() {
         <div class="ilan-satir">
             <div class="ilan-logo">${(aktifSirketAdi() || 'İ').charAt(0).toUpperCase()}</div>
             <div class="ilan-bilgi">
-                <div class="ilan-pozisyon">${i.pozisyon}</div>
+                <div class="ilan-pozisyon">${escapeHtml(i.pozisyon)}</div>
                 <div class="ilan-meta-row">
-                    <span class="meta-chip">📍 ${i.konum || 'Belirtilmemiş'}</span>
-                    <span class="meta-chip">💼 ${turLabel[i.tur] || ''}</span>
+                    <span class="meta-chip">📍 ${escapeHtml(i.konum || 'Belirtilmemiş')}</span>
+                    <span class="meta-chip">💼 ${escapeHtml(turLabel[i.tur] || '')}</span>
                     <span class="meta-chip">📅 ${tarihFmt(i.olusturmaTarihi)}</span>
                 </div>
             </div>
@@ -256,7 +258,7 @@ document.getElementById('ilanDurumFiltre').addEventListener('change', ilanListes
 async function ilanDurumDegistir(id, yeniDurum) {
     try {
         const res = await fetch(`${API_URL}/ilanlar/${id}`, {
-            method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ aktifMi: yeniDurum })
         });
         if (res.ok) { toast(`İlan ${yeniDurum ? 'aktif' : 'pasif'} yapıldı.`); verileriYukle(); }
@@ -308,7 +310,7 @@ document.getElementById('ilanKaydet').addEventListener('click', async () => {
     const method = duzenlenenId ? 'PUT' : 'POST';
 
     try {
-        const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const veri = await res.json(); // Backend'in gerçek yanıtını okuyoruz
         
         if (res.ok && veri.basarili) {
@@ -330,7 +332,7 @@ window.ilanSilModal = function(id) { silAktifId = id; document.getElementById('i
 document.getElementById('ilanSilIptal').addEventListener('click', () => document.getElementById('ilan-sil-modal').classList.remove('show'));
 document.getElementById('ilanSilOnayla').addEventListener('click', async () => {
     try {
-        const res = await fetch(`${API_URL}/ilanlar/${silAktifId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${API_URL}/ilanlar/${silAktifId}`, { method: 'DELETE', credentials: 'include' });
         if (res.ok) { document.getElementById('ilan-sil-modal').classList.remove('show'); toast('🗑️ İlan silindi.'); verileriYukle(); }
     } catch (e) { toast('⚠️ Silinemedi.'); }
 });
@@ -401,13 +403,14 @@ window.basvuruDurumAc = function(id) {
     if (b) {
         let cvHtml = '';
         if (b.cvVar) {
+            const href = sanitizeUrl(`${API_URL}/dosya/cv/${b._id}?type=basvuru`);
             cvHtml = `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e1e5e9;">
-                <a href="${API_URL}/dosya/cv/${b._id}?type=basvuru&token=${token}" target="_blank" style="display:inline-block;padding:8px 14px;background:#0077b5;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">📄 CV İndir</a>
+                <a href="${escapeHtml(href)}" target="_blank" style="display:inline-block;padding:8px 14px;background:#0077b5;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">📄 CV İndir</a>
             </div>`;
         } else {
             cvHtml = `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e1e5e9;font-size:12px;color:#718096;">ℹ️ CV dosyası belirtilmemiş</div>`;
         }
-        document.getElementById('basvuruDetayBilgi').innerHTML = `<strong>${basvuranAd(b)}</strong> — ${b.ilan?.pozisyon || ''}<br>Durum: <strong>${durumLabel[b.durum]}</strong>${cvHtml}`;
+        document.getElementById('basvuruDetayBilgi').innerHTML = `<strong>${escapeHtml(basvuranAd(b))}</strong> — ${escapeHtml(b.ilan?.pozisyon || '')}<br>Durum: <strong>${escapeHtml(durumLabel[b.durum])}</strong>${cvHtml}`;
     }
     document.getElementById('bdurum-modal').classList.add('show');
 }
@@ -416,7 +419,7 @@ document.querySelectorAll('.durum-sec').forEach(btn => {
     btn.addEventListener('click', async () => {
         try {
             const res = await fetch(`${API_URL}/basvurular/${aktifBasvuruId}/durum`, {
-                method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ durum: btn.dataset.durum })
+                method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ durum: btn.dataset.durum })
             });
             if (res.ok) { toast(`✅ Durum güncellendi!`); document.getElementById('bdurum-modal').classList.remove('show'); verileriYukle(); }
         } catch (e) { toast('⚠️ Güncellenemedi.'); }
@@ -435,9 +438,9 @@ function isvKonusmaListesiRender(filtre = '') {
 
     liste.innerHTML = filtrelenmis.map(k => {
         const kisiAdi = tamAd(k.karsiKullanici);
-        const sonMesaj = k.mesajlar.length ? k.mesajlar[k.mesajlar.length - 1] : null;
-        const aktifCls = k.karsiKullanici._id === isvAktifKarsiId ? 'aktif' : '';
-        const onizleme = sonMesaj ? (sonMesaj.gonderen._id === kullanici.id ? 'Sen: ' : '') + sonMesaj.metin : '';
+        const sonMesaj = k.sonMesaj || null;
+        const aktifCls = String(k.karsiKullanici._id) === String(isvAktifKarsiId) ? 'aktif' : '';
+        const onizleme = sonMesaj ? (String(sonMesaj.gonderen) === String(kullanici.id) ? 'Sen: ' : '') + sonMesaj.metin : '';
 
         return `
             <div class="isv-konusma-item ${aktifCls}" onclick="isvKonusmaAc('${k.karsiKullanici._id}')">
@@ -453,8 +456,8 @@ document.getElementById('isvMesajAra').addEventListener('input', function() { is
 
 window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     isvAktifKarsiId = karsiId;
-    const konusma = tumKonusmalar.find(k => k.karsiKullanici._id === karsiId);
-    
+    const konusma = tumKonusmalar.find(k => String(k.karsiKullanici._id) === String(karsiId));
+
     document.getElementById('isvChatBos').style.display = 'none';
     document.getElementById('isvChatAktif').style.display = 'flex';
 
@@ -462,24 +465,34 @@ window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     document.getElementById('isvChatBaslik').innerHTML = `<span>💬 ${escapeHtml(kisiAdi)}</span>`;
 
     const alan = document.getElementById('isvMesajlarAlan');
-    if (!konusma || !konusma.mesajlar.length) {
-        alan.innerHTML = '<div style="text-align:center;padding:32px;color:#a0aec0;font-size:13px;">Henüz mesaj yok. İlk mesajı gönderin!</div>';
-    } else {
-        alan.innerHTML = konusma.mesajlar.map(m => `
-            <div class="isv-msg ${(m.gonderen._id || m.gonderen) === kullanici.id ? 'giden' : 'gelen'}">
-                <div class="isv-msg-balon">${escapeHtml(m.metin)}</div>
-                <div class="isv-msg-zaman">${saatFmt(m.tarih)}</div>
-            </div>
-        `).join('');
+    alan.innerHTML = '<div style="text-align:center;padding:32px;color:#a0aec0;font-size:13px;">Yükleniyor...</div>';
+
+    // Mesajları backend'den çek
+    try {
+        const res = await fetch(`${API_URL}/mesajlar/${karsiId}/mesajlar`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.basarili && data.mesajlar && data.mesajlar.length) {
+            alan.innerHTML = data.mesajlar.map(m => `
+                <div class="isv-msg ${String(m.gonderen._id || m.gonderen) === String(kullanici.id) ? 'giden' : 'gelen'}">
+                    <div class="isv-msg-balon">${escapeHtml(m.metin)}</div>
+                    <div class="isv-msg-zaman">${saatFmt(m.tarih)}</div>
+                </div>
+            `).join('');
+        } else {
+            alan.innerHTML = '<div style="text-align:center;padding:32px;color:#a0aec0;font-size:13px;">Henüz mesaj yok. İlk mesajı gönderin!</div>';
+        }
+    } catch(e) {
+        alan.innerHTML = '<div style="text-align:center;padding:32px;color:#e53e3e;font-size:13px;">Mesajlar yüklenemedi.</div>';
     }
+
     alan.scrollTop = alan.scrollHeight;
     isvKonusmaListesiRender(document.getElementById('isvMesajAra').value);
 
     // Okundu işaretle
     if (konusma && konusma.okunmadi > 0 && okunduGonder) {
-        konusma.okunmadi = 0; 
+        konusma.okunmadi = 0;
         try {
-            await fetch(`${API_URL}/mesajlar/${karsiId}/okundu`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+            await fetch(`${API_URL}/mesajlar/${karsiId}/okundu`, { method: 'PUT', credentials: 'include' });
         } catch(e) {}
     }
 };
@@ -493,7 +506,7 @@ async function isvMesajGonder() {
     input.value = '';
     try {
         const res = await fetch(`${API_URL}/mesajlar/${isvAktifKarsiId}`, {
-            method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ metin })
         });
         if (res.ok) await verileriYukle();
@@ -533,9 +546,7 @@ async function ayarlarYukle() {
     document.getElementById('hEmail').value = kullanici.email || '';
 
     try {
-        const res = await fetch(CONFIG.AUTH_URL + '/profil', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(CONFIG.API_URL + '/profil/ben', { credentials: 'include' });
         const veri = await res.json();
         if (!veri.basarili || !veri.profil) return;
         const p = veri.profil;
@@ -630,9 +641,10 @@ document.getElementById('hesapKaydet').addEventListener('click', async () => {
     };
 
     try {
-        const res = await fetch(CONFIG.AUTH_URL + '/profil-guncelle', {
+        const res = await fetch(CONFIG.API_URL + '/profil/guncelle', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(guncelleme)
         });
         const veri = await res.json();
@@ -663,10 +675,8 @@ document.getElementById('hesapKaydet').addEventListener('click', async () => {
     cikisBtn.addEventListener('click', () => modal.classList.add('show'));
     iptalBtn?.addEventListener('click', () => modal.classList.remove('show'));
     onayBtn?.addEventListener('click', async () => {
-        if (token) {
-            try { await fetch(CONFIG.AUTH_URL + '/cikis', { method:'POST', headers:{'Authorization':`Bearer ${token}`} }); } catch(e) {}
-            ['token','beniHatirla','kullanici','profilTamamlandi'].forEach(k => localStorage.removeItem(k));
-        }
+        try { await fetch(CONFIG.AUTH_URL + '/cikis', { method:'POST', credentials: 'include' }); } catch(e) {}
+        ['token','beniHatirla','kullanici','profilTamamlandi'].forEach(k => localStorage.removeItem(k));
         window.location.href = '../giris_ekrani/index.html';
     });
 })();

@@ -6,8 +6,22 @@ const User      = require('../models/User');
 const authMiddleware = require('../middleware/auth');
 const validator = require('../utils/validator');
 const { emailVerificationCodeGonder, passwordResetCodeGonder } = require('../utils/mailer');
+const logger    = require('../utils/logger');
 
 const router = express.Router();
+
+// Helper: set auth cookie (httpOnly) alongside returning token in body
+function setAuthCookie(res, token) {
+    try {
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        };
+        res.cookie('token', token, cookieOptions);
+    } catch (e) { logger.warn('setAuthCookie failed', { error: e.message }); }
+}
 
 const tokenOlustur = (id) => jwt.sign(
     { id },
@@ -84,11 +98,13 @@ router.post('/kayit', girisLimiter, async (req, res, next) => {
         });
 
         // Email doğrulama kodu gönder
+        let emailSent = true;
         try {
             await emailVerificationCodeGonder(emailTemiz, verificationCode);
         } catch (emailErr) {
-            console.error('Email gönderme hatası:', emailErr);
-            // Email hatası olsa bile devam et - kullanıcı yeniden gönder düğmesini kullanabilir
+            emailSent = false;
+            logger.error('Kayıt email gönderilemedi:', { email: emailTemiz, error: emailErr.message });
+            // Email hatası olsa bile devam et - frontend kullanıcıya bilgi gösterebilir
         }
 
         // Token oluştur (limited süreli, email doğrulama gerekli)
@@ -102,12 +118,16 @@ router.post('/kayit', girisLimiter, async (req, res, next) => {
             yonlendirme = '/profil_doldurma/profil_doldurma.html';
         }
 
+        // set cookie for browser-based auth (non-breaking: token still returned in body)
+        try { setAuthCookie(res, token); } catch (e) {}
+
         res.json({
             basarili: true,
             mesaj: 'Kayıt başarılı! Lütfen profilinizi tamamlayın.',
             yonlendirme,
             token,
             emailVerificationRequired: true,
+            emailSent,
             kullanici: {
                 id: yeniKullanici._id,
                 email: yeniKullanici.email,
@@ -144,12 +164,26 @@ router.post('/giris', girisLimiter, async (req, res, next) => {
             return res.status(401).json({ basarili: false, mesaj: 'E-posta veya şifre hatalı.' });
         }
 
+        // Email doğrulanmış mı?
+        if (!kullanici.emailVerified) {
+            const token = tokenOlustur(kullanici._id);
+            return res.status(403).json({
+                basarili: false,
+                mesaj: 'E-posta adresiniz henüz doğrulanmamış. Lütfen gelen kutunuzu kontrol edin.',
+                emailVerificationRequired: true,
+                token
+            });
+        }
+
         // Son giriş zamanını güncelle
         kullanici.sonGiris = new Date();
         await kullanici.save();
 
         // Token oluştur
         const token = tokenOlustur(kullanici._id);
+
+        // set cookie for browser-based auth (non-breaking)
+        try { setAuthCookie(res, token); } catch (e) {}
 
         res.json({
             basarili: true,
@@ -191,18 +225,22 @@ router.post('/sifre-kodu-gonder', girisLimiter, async (req, res, next) => {
         await kullanici.save();
 
         // Email gönder (console'a da log et)
+        let emailSent = true;
         try {
             const { sifreBelirlemeKoduGonder } = require('../utils/mailer');
             await sifreBelirlemeKoduGonder(emailTemiz, kod);
+            logger.info('Şifre belirleme kodu gönderildi:', { email: emailTemiz });
         } catch (e) {
-            console.error('Mail gönderilemedi:', e.message);
-            console.log('\n🔐 ŞİFRE BELİRLEME KODU [' + emailTemiz + ']: ' + kod + '\n');
+            emailSent = false;
+            logger.error('Şifre belirleme kodu gönderilemedi:', { email: emailTemiz, error: e.message });
+            logger.info('Şifre belirleme kodu (fallback):', { email: emailTemiz, kod });
         }
 
         res.json({
             basarili: true,
-            mesaj: 'Şifre belirleme kodu gönderildi. E-postanızı kontrol edin.',
-            email: emailTemiz
+            mesaj: 'Şifre belirleme kodu oluşturuldu. E-postanızı kontrol edin.',
+            email: emailTemiz,
+            emailSent
         });
     } catch (err) { next(err); }
 });
@@ -236,6 +274,7 @@ router.post('/sifre-kodu-dogrula', girisLimiter, async (req, res, next) => {
         // Kod doğrulandı - Şifre belirleme için temporary token oluştur
         const tempToken = tokenOlustur(kullanici._id);
 
+        try { setAuthCookie(res, tempToken); } catch (e) {}
         res.json({
             basarili: true,
             mesaj: 'Kod doğrulandı. Şifrenizi belirleyebilirsiniz.',
@@ -288,259 +327,6 @@ router.get('/ben', authMiddleware, (req, res) => {
             soyisim: req.kullanici.soyisim, profilTamamlandi: req.kullanici.profilTamamlandi
         }
     });
-});
-
-// POST /api/auth/profil-tamamla
-router.post('/profil-tamamla', authMiddleware, async (req, res, next) => {
-    try {
-        const veri = req.body;
-        
-        // Validation
-        const adCheck = validator.validateName(veri.ad, 'Ad');
-        if (!adCheck.valid) return res.status(400).json({ basarili: false, mesaj: adCheck.error });
-        
-        const soyadCheck = validator.validateName(veri.soyad, 'Soyadı');
-        if (!soyadCheck.valid) return res.status(400).json({ basarili: false, mesaj: soyadCheck.error });
-        
-        const telefonCheck = validator.validatePhone(veri.iletisim?.telefon, false);
-        if (!telefonCheck.valid) return res.status(400).json({ basarili: false, mesaj: telefonCheck.error });
-        
-        const sirketAdi = validator.sanitizeString(veri.sirketAdi || veri.ad);
-        const calisanSayisi = validator.sanitizeString(veri.calisanSayisi);
-
-        const kullanici = await User.findByIdAndUpdate(req.kullanici._id, {
-            profilTamamlandi: true,
-            isim: sirketAdi || validator.sanitizeString(veri.ad),
-            soyisim: validator.sanitizeString(veri.soyad),
-            rol: veri.tip === 'ogrenci' ? 'ogrenci' : (req.kullanici.rol === 'isveren' ? 'isveren' : 'mezun'),
-            unvan: validator.sanitizeString(veri.unvan), 
-            konum: validator.sanitizeString(veri.konum), 
-            hakkimda: validator.sanitizeString(veri.hakkimda),
-            telefon: veri.iletisim?.telefon ? String(veri.iletisim.telefon).substring(0, 20) : '',
-            sirketAdi,
-            adres: validator.sanitizeString(veri.adres),
-            slogan: validator.sanitizeString(veri.slogan),
-            calisanSayisi,
-            isTurleri: Array.isArray(veri.isTurleri) ? veri.isTurleri.map(x => validator.sanitizeString(x)).filter(Boolean) : [],
-            bolumler: Array.isArray(veri.bolumler) ? veri.bolumler.map(x => validator.sanitizeString(x)).filter(Boolean) : [],
-            sosyalMedya: { 
-                linkedin: validator.sanitizeString(veri.iletisim?.linkedin) || '', 
-                github: validator.sanitizeString(veri.iletisim?.github) || '', 
-                web: validator.sanitizeString(veri.iletisim?.web) || '' 
-            },
-            egitim: veri.egitim || [], 
-            deneyim: veri.deneyim || [],
-            beceriler: veri.becerilerDetay || [], 
-            diller: veri.diller || []
-        }, { new: true, runValidators: false });
-        res.json({ 
-            basarili: true, 
-            mesaj: 'Profil başarıyla kaydedildi.',
-            kullanici: {
-                id: kullanici._id, 
-                email: kullanici.email, 
-                rol: kullanici.rol,
-                isim: kullanici.isim, 
-                sirketAdi: kullanici.sirketAdi,
-                soyisim: kullanici.soyisim, 
-                profilTamamlandi: kullanici.profilTamamlandi
-            }
-        });
-    } catch (err) { next(err); }
-});
-
-// PUT /api/auth/profil-guncelle — Profil sayfasından güncelleme
-router.put('/profil-guncelle', authMiddleware, async (req, res, next) => {
-    try {
-        const veri = req.body;
-        const guncelleme = {};
-        
-        // Validation ile sanitize
-        if (veri.isim !== undefined) {
-            const check = validator.validateName(veri.isim, 'Ad');
-            if (!check.valid) return res.status(400).json({ basarili: false, mesaj: check.error });
-            guncelleme.isim = validator.sanitizeString(veri.isim);
-        }
-        if (veri.soyisim  !== undefined) {
-            const check = validator.validateName(veri.soyisim, 'Soyadı');
-            if (!check.valid) return res.status(400).json({ basarili: false, mesaj: check.error });
-            guncelleme.soyisim = validator.sanitizeString(veri.soyisim);
-        }
-        if (veri.telefon  !== undefined) {
-            const check = validator.validatePhone(veri.telefon, false);
-            if (!check.valid) return res.status(400).json({ basarili: false, mesaj: check.error });
-            guncelleme.telefon = veri.telefon ? String(veri.telefon).substring(0, 20) : '';
-        }
-        if (veri.unvan    !== undefined) guncelleme.unvan    = validator.sanitizeString(veri.unvan);
-        if (veri.konum    !== undefined) guncelleme.konum    = validator.sanitizeString(veri.konum);
-        if (veri.hakkimda !== undefined) guncelleme.hakkimda = validator.sanitizeString(veri.hakkimda);
-        if (veri.sirketAdi !== undefined) guncelleme.sirketAdi = validator.sanitizeString(veri.sirketAdi);
-        if (veri.adres !== undefined) guncelleme.adres = validator.sanitizeString(veri.adres);
-        if (veri.slogan !== undefined) guncelleme.slogan = validator.sanitizeString(veri.slogan);
-        if (veri.calisanSayisi !== undefined) guncelleme.calisanSayisi = validator.sanitizeString(veri.calisanSayisi);
-        if (veri.isTurleri !== undefined) {
-            guncelleme.isTurleri = Array.isArray(veri.isTurleri)
-                ? veri.isTurleri.map(x => validator.sanitizeString(x)).filter(Boolean)
-                : [];
-        }
-        if (veri.bolumler !== undefined) {
-            guncelleme.bolumler = Array.isArray(veri.bolumler)
-                ? veri.bolumler.map(x => validator.sanitizeString(x)).filter(Boolean)
-                : [];
-        }
-        if (veri.sosyalMedya !== undefined) guncelleme.sosyalMedya = veri.sosyalMedya;
-        if (veri.egitim   !== undefined) guncelleme.egitim   = veri.egitim;
-        if (veri.deneyim  !== undefined) guncelleme.deneyim  = veri.deneyim;
-        if (veri.beceriler!== undefined) guncelleme.beceriler= veri.beceriler;
-        if (veri.diller   !== undefined) guncelleme.diller   = veri.diller;
-        if (veri.tip      !== undefined) {
-            guncelleme.rol = veri.tip === 'ogrenci' ? 'ogrenci' : 'mezun';
-        }
-
-        const kullanici = await User.findByIdAndUpdate(
-            req.kullanici._id, guncelleme, { new: true, runValidators: false }
-        );
-        res.json({ basarili: true, mesaj: 'Profil güncellendi.', kullanici: {
-            id: kullanici._id, email: kullanici.email, rol: kullanici.rol,
-            isim: kullanici.isim,
-            soyisim: kullanici.soyisim,
-            sirketAdi: kullanici.sirketAdi,
-            calisanSayisi: kullanici.calisanSayisi,
-            profilTamamlandi: kullanici.profilTamamlandi
-        }});
-    } catch (err) { next(err); }
-});
-
-// Regex injection önlemi: özel karakterleri escape et
-function regexEscape(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// GET /api/auth/mezunlar — Mezun dizini
-router.get('/mezunlar', authMiddleware, async (req, res, next) => {
-    try {
-        const { arama, bolum, tip } = req.query;
-        const filtre = {
-            rol: { $in: ['mezun', 'ogrenci'] },
-            profilTamamlandi: true,
-            _id: { $ne: req.kullanici._id }
-        };
-        if (tip && (tip === 'mezun' || tip === 'ogrenci')) {
-            filtre.rol = tip;
-        }
-        if (arama) {
-            const aramaGuvenli = regexEscape(arama.substring(0, 100));
-            filtre.$or = [
-                { isim:    { $regex: aramaGuvenli, $options: 'i' } },
-                { soyisim: { $regex: aramaGuvenli, $options: 'i' } },
-                { unvan:   { $regex: aramaGuvenli, $options: 'i' } },
-                { 'beceriler.ad': { $regex: aramaGuvenli, $options: 'i' } }
-            ];
-        }
-
-        const mezunlar = await User.find(filtre)
-            .select('isim soyisim rol unvan konum hakkimda beceriler diller egitim sosyalMedya telefon olusturmaTarihi')
-            .sort({ olusturmaTarihi: -1 })
-            .limit(100);
-
-        res.json({ basarili: true, mezunlar });
-    } catch (err) { next(err); }
-});
-
-// GET /api/auth/profil — Kullanıcı profil bilgilerini getir
-router.get('/profil', authMiddleware, async (req, res, next) => {
-    try {
-        const kullanici = await User.findById(req.user.id).select('-password');
-        if (!kullanici) {
-            return res.status(404).json({ basarili: false, mesaj: 'Kullanıcı bulunamadı.' });
-        }
-        res.json({
-            basarili: true,
-            profil: {
-                id: kullanici._id,
-                email: kullanici.email,
-                rol: kullanici.rol,
-                isim: kullanici.isim,
-                soyisim: kullanici.soyisim,
-                unvan: kullanici.unvan,
-                konum: kullanici.konum,
-                hakkimda: kullanici.hakkimda,
-                telefon: kullanici.telefon,
-                sirketAdi: kullanici.sirketAdi,
-                adres: kullanici.adres,
-                slogan: kullanici.slogan,
-                calisanSayisi: kullanici.calisanSayisi,
-                isTurleri: kullanici.isTurleri || [],
-                bolumler: kullanici.bolumler || [],
-                egitim: kullanici.egitim || [],
-                deneyim: kullanici.deneyim || [],
-                beceriler: kullanici.beceriler || [],
-                diller: kullanici.diller || [],
-                sosyalMedya: kullanici.sosyalMedya || {},
-                profilTamamlandi: kullanici.profilTamamlandi
-            }
-        });
-    } catch (err) { next(err); }
-});
-
-// PUT /api/auth/profil — Kullanıcı profil bilgilerini güncelle
-router.put('/profil', authMiddleware, async (req, res, next) => {
-    try {
-        const { isim, soyisim, unvan, konum, hakkimda, telefon, sirketAdi, adres, slogan, calisanSayisi, isTurleri, bolumler, egitim, deneyim, beceriler, diller, sosyalMedya, profilTamamlandi } = req.body;
-
-        const kullanici = await User.findByIdAndUpdate(
-            req.user.id,
-            {
-                isim: isim || undefined,
-                soyisim: soyisim || undefined,
-                unvan: unvan || undefined,
-                konum: konum || undefined,
-                hakkimda: hakkimda || undefined,
-                telefon: telefon || undefined,
-                sirketAdi: sirketAdi || undefined,
-                adres: adres || undefined,
-                slogan: slogan || undefined,
-                calisanSayisi: calisanSayisi || undefined,
-                isTurleri: isTurleri !== undefined ? isTurleri : undefined,
-                bolumler: bolumler !== undefined ? bolumler : undefined,
-                egitim: egitim !== undefined ? egitim : undefined,
-                deneyim: deneyim !== undefined ? deneyim : undefined,
-                beceriler: beceriler !== undefined ? beceriler : undefined,
-                diller: diller !== undefined ? diller : undefined,
-                sosyalMedya: sosyalMedya !== undefined ? sosyalMedya : undefined,
-                profilTamamlandi: profilTamamlandi !== undefined ? profilTamamlandi : undefined
-            },
-            { new: true, runValidators: true }
-        ).select('-password');
-
-        res.json({
-            basarili: true,
-            mesaj: 'Profil güncellendi.',
-            profil: {
-                id: kullanici._id,
-                email: kullanici.email,
-                rol: kullanici.rol,
-                isim: kullanici.isim,
-                soyisim: kullanici.soyisim,
-                unvan: kullanici.unvan,
-                konum: kullanici.konum,
-                hakkimda: kullanici.hakkimda,
-                telefon: kullanici.telefon,
-                sirketAdi: kullanici.sirketAdi,
-                adres: kullanici.adres,
-                slogan: kullanici.slogan,
-                calisanSayisi: kullanici.calisanSayisi,
-                isTurleri: kullanici.isTurleri || [],
-                bolumler: kullanici.bolumler || [],
-                egitim: kullanici.egitim || [],
-                deneyim: kullanici.deneyim || [],
-                beceriler: kullanici.beceriler || [],
-                diller: kullanici.diller || [],
-                sosyalMedya: kullanici.sosyalMedya || {},
-                profilTamamlandi: kullanici.profilTamamlandi
-            }
-        });
-    } catch (err) { next(err); }
 });
 
 // ═══════════════════════════════════════════════════════
@@ -606,16 +392,19 @@ router.post('/resend-verification-code', authMiddleware, async (req, res, next) 
         await kullanici.save();
 
         // Email gönder
+        let emailSent = true;
         try {
             await emailVerificationCodeGonder(kullanici.email, verificationCode);
         } catch (emailErr) {
-            console.error('Email gönderme hatası:', emailErr);
-            console.log('\n📧 EMAIL DOĞRULAMA KODU [' + kullanici.email + ']: ' + verificationCode + '\n');
+            emailSent = false;
+            logger.error('Doğrulama kodu yeniden gönderilemedi:', { email: kullanici.email, error: emailErr.message });
+            logger.info('Email doğrulama kodu (fallback):', { email: kullanici.email, verificationCode });
         }
 
         res.json({
             basarili: true,
-            mesaj: 'Yeni doğrulama kodu gönderildi. Email adresinizi kontrol edin.'
+            mesaj: 'Yeni doğrulama kodu oluşturuldu.',
+            emailSent
         });
     } catch (err) { next(err); }
 });
@@ -624,7 +413,7 @@ router.post('/resend-verification-code', authMiddleware, async (req, res, next) 
 router.post('/forgot-password', girisLimiter, async (req, res, next) => {
     try {
         const { email } = req.body;
-        console.log('🟢 /forgot-password çağrısı alındı. Email:', email);
+        logger.info('Şifre sıfırlama talebi:', { email });
 
         const emailCheck = validator.validateEmail(email);
         if (!emailCheck.valid) {
@@ -633,7 +422,6 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
 
         const emailTemiz = email.toLowerCase().trim();
         const kullanici = await User.findOne({ email: emailTemiz });
-        console.log('🟢 Kullanıcı bulundu mu?', !!kullanici);
         
         if (!kullanici) {
             // Güvenlik: var olmayan email için de başarılı dön
@@ -646,30 +434,29 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
         // Şifre sıfırla kodu oluştur
         const resetCode = generateVerificationCode();
         const resetExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 dakika
-        console.log('🟢 Reset kodu oluşturuldu:', resetCode);
 
         kullanici.passwordResetCode = resetCode;
         kullanici.passwordResetCodeExpiry = resetExpiry;
         await kullanici.save();
-        console.log('🟢 Kullanıcı kaydedildi');
 
         // Email gönder
+        let emailSent = true;
         try {
-            console.log('🟢 Mail gönderme başladı...');
             await passwordResetCodeGonder(emailTemiz, resetCode);
-            console.log('🟢 Mail gönderme tamamlandı');
+            logger.info('Şifre sıfırlama kodu gönderildi:', { email: emailTemiz });
         } catch (emailErr) {
-            console.error('❌ Email gönderme hatası:', emailErr.message);
-            console.error('Detaylı hata:', emailErr);
-            console.log('\n🔐 ŞİFRE SIFIRLA KODU [' + emailTemiz + ']: ' + resetCode + '\n');
+            emailSent = false;
+            logger.error('Şifre sıfırlama emaili gönderilemedi:', { email: emailTemiz, error: emailErr.message });
+            logger.info('Şifre sıfırlama kodu (fallback):', { email: emailTemiz, resetCode });
         }
 
         res.json({
             basarili: true,
-            mesaj: 'Şifre sıfırlama kodu gönderildi. Email adresinizi kontrol edin.'
+            mesaj: 'Şifre sıfırlama kodu oluşturuldu. Email adresinizi kontrol edin.',
+            emailSent
         });
     } catch (err) { 
-        console.error('🔴 forgot-password error:', err.message);
+        logger.error('forgot-password hatası:', { error: err.message });
         next(err); 
     }
 });
@@ -773,6 +560,7 @@ router.post('/change-password', authMiddleware, async (req, res, next) => {
 
 // POST /api/auth/cikis
 router.post('/cikis', authMiddleware, (req, res) => {
+    try { res.clearCookie('token'); } catch (e) { /* ignore */ }
     res.json({ basarili: true, mesaj: 'Çıkış başarılı.' });
 });
 

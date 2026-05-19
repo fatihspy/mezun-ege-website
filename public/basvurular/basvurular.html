@@ -57,6 +57,7 @@
 <body>
     
     <header class="main-header">
+    <script src="/utils/common.js"></script>
             <div class="header-content">
                 <div class="logo">
                     <h2>Egemyo Mezun</h2>
@@ -160,6 +161,19 @@
                     <a href="../ilanlar/ilanlar.html" class="btn-primary">İlanlara Git</a>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <div id="geriCek-modal" class="modal">
+        <div class="modal-content" style="text-align:center;padding:32px 28px;">
+            <div class="modal-icon"><div class="icon" style="background:linear-gradient(135deg,#e53e3e,#fc8181);box-shadow:0 8px 25px rgba(229,62,62,0.3);">↩️</div></div>
+            <h3>Başvuruyu Geri Çek</h3>
+            <p style="color:#718096;margin:12px 0 4px;"><strong id="geriCekPozisyon"></strong></p>
+            <p style="color:#718096;margin-bottom:24px;"><span id="geriCekSirket"></span> — bu başvuruyu geri çekmek istediğinizden emin misiniz?</p>
+            <div class="modal-buttons">
+                <button id="geriCekOnayla" class="modal-btn confirm" style="background:#e53e3e;">Evet, Geri Çek</button>
+                <button id="geriCekIptal" class="modal-btn cancel">Vazgeç</button>
+            </div>
         </div>
     </div>
 

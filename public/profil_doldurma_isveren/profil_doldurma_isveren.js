@@ -1,10 +1,7 @@
-const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth';
+const API_URL  = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL  : 'http://localhost:3000/api/auth';
+const PROFIL_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL + '/profil' : 'http://localhost:3000/api/profil';
 
-const TOKEN = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-if (!TOKEN) {
-    window.location.href = '../giris_ekrani/index.html';
-}
+// cookie-based auth is used; do not rely on localStorage token
 
 // ── Chip seçim state ─────────────────────────────────
 const seciliChipler = { isTurleri: [], bolumler: [] };
@@ -167,11 +164,11 @@ document.getElementById('tamamlaBtn')?.addEventListener('click', async () => {
     btn.textContent = 'Kaydediliyor...';
 
     try {
-        const yanit = await fetch(`${API_URL}/profil-tamamla`, {
+        const yanit = await fetch(`${PROFIL_URL}/tamamla`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + TOKEN
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(veri)
         });

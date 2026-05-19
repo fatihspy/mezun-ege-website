@@ -6,6 +6,33 @@ const Ilan = require('../models/Ilan');
 const Basvuru = require('../models/Basvuru');
 const authMiddleware = require('../middleware/auth');
 
+// Normalize incoming `tur` values to the model enum values
+function normalizeTur(val) {
+    if (typeof val !== 'string') return null;
+    let v = val.toLowerCase().trim();
+    // replace common Turkish characters with ASCII approximations for matching
+    v = v.replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+             .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c');
+    v = v.replace(/[^a-z0-9 ]/g, '');
+    v = v.replace(/\s+/g, ' ').trim();
+
+    const map = {
+        'tam': 'tam',
+        'tam zamanli': 'tam',
+        'tamzamanli': 'tam',
+        'tamm': 'tam',
+        'yari': 'yari',
+        'yari zamanli': 'yari',
+        'staj': 'staj',
+        'uzaktan': 'uzaktan',
+        'remote': 'uzaktan',
+        'uzaktan calisma': 'uzaktan',
+        'uzaktancalisma': 'uzaktan'
+    };
+
+    return map[v] || null;
+}
+
 // Rate limiters
 const ilanListeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,  // 15 dakika
@@ -51,11 +78,18 @@ router.post('/', ilanCreateLimiter, authMiddleware, async (req, res, next) => {
         const salaryCheck = validator.validateSalary(req.body.minMaas);
         if (!salaryCheck.valid) return res.status(400).json({ basarili: false, mesaj: salaryCheck.error });
         
+        // Normalize `tur` to match schema enum values when possible
+        if (req.body.tur) {
+            const nt = normalizeTur(req.body.tur);
+            if (nt) req.body.tur = nt;
+            else req.body.tur = String(req.body.tur).toLowerCase().trim();
+        }
+
         const yeniIlan = await Ilan.create({ 
             ...req.body, 
             isveren: req.kullanici._id,
             pozisyon: validator.sanitizeString(req.body.pozisyon),
-            aciklama: validator.sanitizeString(req.body.aciklama),
+            aciklama: validator.sanitizeLongText(req.body.aciklama),
             konum: validator.sanitizeString(req.body.konum)
         });
         res.status(201).json({ basarili: true, ilan: yeniIlan });
@@ -65,10 +99,28 @@ router.post('/', ilanCreateLimiter, authMiddleware, async (req, res, next) => {
 // PUT /api/ilanlar/:id — İlan güncelle
 router.put('/:id', ilanCreateLimiter, authMiddleware, async (req, res, next) => {
     try {
+        // Whitelist and sanitize allowed update fields to prevent privilege escalation
+        const { pozisyon, aciklama, tur, maas, konum, nitelikler, sonTarih, aktifMi } = req.body;
+        const updateSet = {};
+        if (pozisyon !== undefined) updateSet.pozisyon = validator.sanitizeString(pozisyon);
+        if (aciklama !== undefined) updateSet.aciklama = validator.sanitizeLongText(aciklama);
+        if (tur !== undefined) {
+            const nt = normalizeTur(tur);
+            updateSet.tur = nt || String(tur).toLowerCase().trim();
+        }
+        if (maas !== undefined) updateSet.maas = validator.sanitizeString(maas);
+        if (konum !== undefined) updateSet.konum = validator.sanitizeString(konum);
+        if (nitelikler !== undefined) updateSet.nitelikler = validator.sanitizeLongText(nitelikler);
+        if (sonTarih !== undefined) {
+            const d = new Date(sonTarih);
+            if (!isNaN(d)) updateSet.sonTarih = d;
+        }
+        if (aktifMi !== undefined) updateSet.aktifMi = Boolean(aktifMi);
+
         const ilan = await Ilan.findOneAndUpdate(
             { _id: req.params.id, isveren: req.kullanici._id },
-            req.body,
-            { new: true }
+            { $set: updateSet },
+            { new: true, runValidators: true }
         );
         if (!ilan) return res.status(404).json({ basarili: false, mesaj: 'İlan bulunamadı veya yetkiniz yok.' });
         res.json({ basarili: true, ilan });

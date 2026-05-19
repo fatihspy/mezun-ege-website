@@ -36,14 +36,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const mezun = JSON.parse(secilenMezun);
             sessionStorage.removeItem('secilenMezunMesaj');
             
-            // Modal'ı aç ve kişiyi seç
+            // Önce modal'ı aç (içinde seciliKisId'yi null yapar)
             yeniMesajModalAc();
-            setTimeout(() => {
-                window.seciliKisId = mezun._id;
-                window.seciliKisAdi = `${mezun.isim} ${mezun.soyisim}`;
-                document.getElementById('kisiAramaInput').value = window.seciliKisAdi;
-                document.getElementById('ilkMesaj').focus();
-            }, 100);
+            // Sonra ID ve adı set et, input'u doldur
+            window.seciliKisId = mezun._id;
+            window.seciliKisAdi = `${mezun.isim || ''} ${mezun.soyisim || ''}`.trim();
+            document.getElementById('kisiAramaInput').value = window.seciliKisAdi;
+            document.getElementById('ilkMesaj').focus();
         } catch (err) {
             console.error('Seçilen mezun parsing hatası:', err);
         }
@@ -72,13 +71,14 @@ async function konusmalarıYukle() {
         }
         
         data.konusmalar.forEach(k => {
-            const sonMesaj = k.mesajlar[k.mesajlar.length - 1];
+            const sonMesaj = k.sonMesaj;
             const okunmadiText = k.okunmadi > 0 ? `<span class="isv-k-badge">${k.okunmadi}</span>` : '';
             const adSoyad = `${k.karsiKullanici.isim || ''} ${k.karsiKullanici.soyisim || ''}`.trim() || 'Kullanıcı';
             const sonMetin = (sonMesaj?.metin || '').trim() || 'Henüz mesaj yok';
             
             const item = document.createElement('div');
             item.className = 'konusma-item' + (aktifKarsiKullaniciId === k.karsiKullanici._id.toString() ? ' aktif' : '');
+            item.dataset.karsiId = k.karsiKullanici._id;
             item.innerHTML = `
                 <div class="konusma-info">
                     <div class="isv-k-ad">${escapeHtml(adSoyad)}</div>
@@ -129,22 +129,27 @@ async function konusmaSec(karsiKullanici, secilenItem = null) {
 
 async function mesajlarıYukle() {
     try {
-        const res = await apiFetch(CONFIG.API_URL + '/mesajlar/konusmalar');
+        const res = await apiFetch(CONFIG.API_URL + '/mesajlar/' + aktifKarsiKullaniciId + '/mesajlar');
         if (!res) return;
         const data = await res.json();
         
-        if (!data.basarili || !data.konusmalar) return;
-        
-        const konusma = data.konusmalar.find(k => k.karsiKullanici._id === aktifKarsiKullaniciId);
-        if (!konusma) return;
+        if (!data.basarili || !data.mesajlar) return;
         
         const mesajlarAlan = document.getElementById('mesajlarAlan');
-        mesajlarAlan.innerHTML = '';
-        
+        const mevcutSayi = mesajlarAlan.children.length;
+        const yeniSayi = data.mesajlar.length;
+
+        // Aynı sayıda mesaj varsa yeniden render etme
+        if (mevcutSayi === yeniSayi) return;
+
         const kullanici = JSON.parse(localStorage.getItem('kullanici') || '{}');
         const benimId = kullanici.id || kullanici._id;
-        
-        konusma.mesajlar.forEach(m => {
+
+        // Kullanıcı en alttaydı mı? (scroll sonunda güncelle)
+        const altaYakin = mesajlarAlan.scrollHeight - mesajlarAlan.scrollTop - mesajlarAlan.clientHeight < 80;
+
+        mesajlarAlan.innerHTML = '';
+        data.mesajlar.forEach(m => {
             const gonderenId = m.gonderen?._id || m.gonderen;
             const benGonderdim = String(gonderenId) === String(benimId);
             const div = document.createElement('div');
@@ -157,8 +162,10 @@ async function mesajlarıYukle() {
             mesajlarAlan.appendChild(div);
         });
         
-        // Alt'a kaydır
-        mesajlarAlan.scrollTop = mesajlarAlan.scrollHeight;
+        // Yeni mesaj varsa ve kullanıcı alttaydıysa kaydır
+        if (altaYakin || yeniSayi > mevcutSayi) {
+            mesajlarAlan.scrollTop = mesajlarAlan.scrollHeight;
+        }
     } catch (err) {
         console.error('Mesajları yükle hatası:', err);
     }
@@ -173,6 +180,8 @@ function yeniMesajModalAc() {
     document.getElementById('ilkMesaj').value = '';
     document.getElementById('kisiAramaSonuclari').innerHTML = '';
     document.getElementById('kisiAramaSonuclari').style.display = 'none';
+    window.seciliKisId = null;
+    window.seciliKisAdi = null;
 }
 
 function yeniMesajModalKapat() {
@@ -200,15 +209,16 @@ async function kisiAra(q) {
             return;
         }
         
-        sonuclar.innerHTML = data.kisiler.map(k => `
-            <div style="padding:12px; cursor:pointer; border-bottom:1px solid #f0f0f0; transition:background 0.2s;" 
-                 onmouseover="this.style.background='#f8f9fa'" 
-                 onmouseout="this.style.background=''" 
-                 onclick="kisiSec('${k._id}', '${escapeHtml(k.isim)} ${escapeHtml(k.soyisim)}')">
-                <strong>${escapeHtml(k.isim)} ${escapeHtml(k.soyisim)}</strong><br>
-                <small style="color:#718096;">${escapeHtml(k.email)}</small>
-            </div>
-        `).join('');
+        sonuclar.innerHTML = '';
+        data.kisiler.forEach(k => {
+            const item = document.createElement('div');
+            item.style.cssText = 'padding:12px; cursor:pointer; border-bottom:1px solid #f0f0f0; transition:background 0.2s;';
+            item.innerHTML = `<strong>${escapeHtml(k.isim)} ${escapeHtml(k.soyisim)}</strong><br><small style="color:#718096;">${escapeHtml(k.email)}</small>`;
+            item.addEventListener('mouseover', () => item.style.background = '#f8f9fa');
+            item.addEventListener('mouseout',  () => item.style.background = '');
+            item.addEventListener('click', () => kisiSec(k._id, `${k.isim} ${k.soyisim}`));
+            sonuclar.appendChild(item);
+        });
         sonuclar.style.display = 'block';
     } catch (err) {
         console.error('Kişi arama hatası:', err);
@@ -228,7 +238,8 @@ function kisiSec(kisId, kisAdi) {
 
 async function yeniMesajGonder() {
     if (!window.seciliKisId) {
-        toastGoster('Lütfen bir kişi seçin', 'uyari');
+        toastGoster('Lütfen listeden bir kişi seçin', 'uyari');
+        document.getElementById('kisiAramaInput').focus();
         return;
     }
     
@@ -256,11 +267,20 @@ async function yeniMesajGonder() {
         toastGoster('Mesaj gönderildi!', 'basarı');
         yeniMesajModalKapat();
         
-        // Konuşmaları yenile
-        konusmalarıYukle();
-        
+        // Konuşmaları yenile, sonra o konuşmayı aç
+        const hedefKisId = window.seciliKisId;
         window.seciliKisId = null;
         window.seciliKisAdi = null;
+
+        await konusmalarıYukle();
+
+        // Gönderilen kişinin konuşmasını otomatik seç
+        const konusmaItems = document.querySelectorAll('.konusma-item');
+        konusmaItems.forEach(item => {
+            if (item.dataset.karsiId === hedefKisId) {
+                item.click();
+            }
+        });
     } catch (err) {
         console.error('Yeni mesaj gönder hatası:', err);
         toastGoster('Hata: ' + err.message, 'hata');

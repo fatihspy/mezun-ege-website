@@ -1,14 +1,5 @@
 const nodemailer = require('nodemailer');
-const fs = require('fs');
-const path = require('path');
-
-const debugLogPath = path.join(__dirname, '../mail-debug.log');
-
-function debugLog(msg) {
-    const timestamp = new Date().toISOString();
-    fs.appendFileSync(debugLogPath, `[${timestamp}] ${msg}\n`);
-    console.log(msg);
-}
+const logger     = require('./logger');
 
 const transporter = nodemailer.createTransport({
     host:   process.env.MAIL_HOST,
@@ -23,11 +14,20 @@ const transporter = nodemailer.createTransport({
 // Transporter'ı test et
 transporter.verify((err, success) => {
     if (err) {
-        debugLog('❌ Mail konfigürasyonu hatalı: ' + err.message);
+        logger.error('Mail konfigürasyonu hatalı (başlangıç testi):', { error: err.message });
     } else {
-        debugLog('✅ Mail servisi bağlantısı başarılı');
+        logger.info('Mail servisi bağlantısı başarılı (başlangıç testi)');
     }
 });
+
+function verifyMailer() {
+    return new Promise((resolve, reject) => {
+        transporter.verify((err, success) => {
+            if (err) return reject(err);
+            resolve(success);
+        });
+    });
+}
 
 async function dogrulamaKoduGonder(email, kod) {
     await transporter.sendMail({
@@ -140,7 +140,7 @@ async function emailVerificationCodeGonder(email, kod) {
 
 async function passwordResetCodeGonder(email, kod) {
     try {
-        debugLog('📧 Şifre sıfırlama maili gönderiliyor: ' + email);
+        logger.info('Şifre sıfırlama maili gönderiliyor:', { email });
         await transporter.sendMail({
             from: process.env.MAIL_FROM,
             to: email,
@@ -175,11 +175,11 @@ async function passwordResetCodeGonder(email, kod) {
             </div>
         `
         });
-        debugLog('✅ Şifre sıfırlama maili başarıyla gönderildi: ' + email);
+        logger.info('Şifre sıfırlama maili gönderildi:', { email });
     } catch (err) {
-        debugLog('❌ Şifre sıfırlama maili gönderilemedi: ' + err.message);
+        logger.error('Şifre sıfırlama maili gönderilemedi:', { email, error: err.message });
         throw err;
     }
 }
 
-module.exports = { dogrulamaKoduGonder, sifreBelirlemeKoduGonder, emailVerificationCodeGonder, passwordResetCodeGonder };
+module.exports = { dogrulamaKoduGonder, sifreBelirlemeKoduGonder, emailVerificationCodeGonder, passwordResetCodeGonder, verifyMailer };

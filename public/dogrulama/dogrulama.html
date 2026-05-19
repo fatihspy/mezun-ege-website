@@ -42,6 +42,7 @@
 <body>
     <div class="container">
         <div class="logo">
+    <script src="/utils/common.js"></script>
             <h1>Egemyo Mezun</h1>
         </div>
 
@@ -82,14 +83,17 @@
 
     <script src="../config.js"></script>
     <script>
-        const token = localStorage.getItem('token');
         const kullaniciObj = JSON.parse(localStorage.getItem('kullanici') || '{}');
         const kullaniciEmail = kullaniciObj.email || localStorage.getItem('email') || '';
 
-        // Token yoksa giriş sayfasına yönlendir
-        if (!token) {
-            window.location.href = '../giris_ekrani/index.html';
-        }
+        // Backend'e sorup doğrula (cookie-based)
+        (async () => {
+            try {
+                const r = await fetch(CONFIG.AUTH_URL + '/ben', { credentials: 'include' });
+                const j = await r.json();
+                if (!j.basarili) window.location.href = '../giris_ekrani/index.html';
+            } catch(e) { /* ağ hatası: yönlendirilmeyebilir */ }
+        })();
 
         // Email'i göster
         document.getElementById('email').value = kullaniciEmail || 'Bilgi alınıyor...';
@@ -111,10 +115,8 @@
             try {
                 const response = await fetch(CONFIG.AUTH_URL + '/verify-email', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code: kod })
                 });
 
@@ -153,13 +155,12 @@
         let geriSayimId = null;
 
         function yeniKodGonder() {
-            if (!token) return;
             const btn = event.target;
             btn.style.pointerEvents = 'none';
 
             fetch(CONFIG.AUTH_URL + '/resend-verification-code', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             }).then(r => r.json()).then(data => {
                 if (data.basarili) {
                     showSuccess(data.mesaj);

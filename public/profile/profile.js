@@ -8,14 +8,11 @@ let profilData   = {}; // Backend'den yüklenecek
 
 // Backend'den profil bilgilerini al
 async function profilGetirAPI() {
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = '../giris_ekrani/index.html'; return; }
-    
-    const authUrl = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth';
+    const apiUrl = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://localhost:3000/api';
     try {
-        const response = await fetch(`${authUrl}/profil`, {
+        const response = await fetch(`${apiUrl}/profil/ben`, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include'
         });
         const result = await response.json();
         if (result.basarili) {
@@ -35,12 +32,11 @@ function profilGetir() {
 
 function profilKaydet(d) {
     // localStorage'a yazma - SADECE backend'e gönder
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const authUrl = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth';
-    fetch(`${authUrl}/profil`, {
+    const apiUrl = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://localhost:3000/api';
+    fetch(`${apiUrl}/profil/guncelle`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             isim:     d.ad,
             soyisim:  d.soyad,
@@ -58,7 +54,7 @@ function profilKaydet(d) {
             beceriler: d.beceriler || [],
             diller:    d.diller    || []
         })
-    }).catch(() => {}); // sessiz hata
+    }).catch(e => console.error('Profil kaydedilemedi:', e));
 }
 
 // ── Header ────────────────────────────────────────────
@@ -615,13 +611,40 @@ document.getElementById('sertifikaKaydet').addEventListener('click', () => {
 });
 
 // ── İstatistikler ─────────────────────────────────────
-function istatistikYukle() {
-    const basvurular = JSON.parse(localStorage.getItem('basvurular') || '[]');
-    const konusmalar = JSON.parse(localStorage.getItem('konusmalar') || '[]');
-    const ilanlar    = JSON.parse(localStorage.getItem('ilanlar') || '[]');
-    document.getElementById('statBasvuru').textContent = basvurular.length;
-    document.getElementById('statMesaj').textContent   = konusmalar.length;
-    document.getElementById('statIlan').textContent    = ilanlar.length;
+async function istatistikYukle() {
+    const apiUrl = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://localhost:3000/api';
+    try {
+        const [r1, r2] = await Promise.allSettled([
+            fetch(`${apiUrl}/basvurular/benimkiler`, { credentials: 'include' }),
+            fetch(`${apiUrl}/mesajlar/konusmalar`,   { credentials: 'include' })
+        ]);
+
+        let basvuruSayisi = 0;
+        let mesajSayisi   = 0;
+
+        if (r1.status === 'fulfilled' && r1.value.ok) {
+            const veri = await r1.value.json();
+            if (veri.basarili && Array.isArray(veri.basvurular)) {
+                basvuruSayisi = veri.basvurular.length;
+            }
+        }
+
+        if (r2.status === 'fulfilled' && r2.value.ok) {
+            const veri = await r2.value.json();
+            if (veri.basarili && Array.isArray(veri.konusmalar)) {
+                mesajSayisi = veri.konusmalar.length;
+            }
+        }
+
+        document.getElementById('statBasvuru').textContent = basvuruSayisi;
+        document.getElementById('statMesaj').textContent   = mesajSayisi;
+        // Favori ilan henüz backend'de tutulmuyor, geliştirme için hazır bırakıldı
+        document.getElementById('statIlan').textContent    = 0;
+    } catch (e) {
+        document.getElementById('statBasvuru').textContent = 0;
+        document.getElementById('statMesaj').textContent   = 0;
+        document.getElementById('statIlan').textContent    = 0;
+    }
 }
 
 // Hamburger: config.js navBaslat() tarafından yönetilir
@@ -638,7 +661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     beceriYukle();
     dilYukle();
     sertifikaYukle();
-    istatistikYukle();
+    await istatistikYukle();
 });
 
 

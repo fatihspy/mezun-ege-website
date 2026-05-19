@@ -59,6 +59,7 @@
 <body>
     <div class="kart">
         <div class="logo">
+    <script src="/utils/common.js"></script>
             <div class="logo-daire">E</div>
             <h2>Egemyo Mezun</h2>
         </div>
@@ -72,11 +73,17 @@
         </div>
     </div>
     <script>
-        // Token yoksa giriş ekranına yönlendir
-        if (!localStorage.getItem('token')) {
-            document.querySelector('.btn-ana').href = '/giris_ekrani/index.html';
-            document.querySelector('.btn-ana').textContent = '🔑 Giriş Yap';
-        }
+        // Check auth via backend (cookie-based). If unauthenticated, point to login.
+        (async function(){
+            try {
+                const res = await fetch('/api/auth/ben', { credentials: 'include' });
+                if (!res.ok) throw new Error('unauth');
+                // authenticated — keep dashboard link
+            } catch (e) {
+                document.querySelector('.btn-ana').href = '/giris_ekrani/index.html';
+                document.querySelector('.btn-ana').textContent = '🔑 Giriş Yap';
+            }
+        })();
     </script>
 </body>
 </html>

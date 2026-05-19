@@ -8,4 +8,7 @@ const mesajSchema = new mongoose.Schema({
   tarih:    { type: Date, default: Date.now }
 });
 
+// Index to speed up common conversation queries (gonderen/alici sorted by tarih)
+mesajSchema.index({ gonderen: 1, alici: 1, tarih: -1 });
+
 module.exports = mongoose.model('Mesaj', mesajSchema);

@@ -1,59 +1,70 @@
 const express = require('express');
-const router = express.Router();
+const router  = require('express').Router();
 const Basvuru = require('../models/Basvuru');
-const jwt = require('jsonwebtoken');
+const jwt     = require('jsonwebtoken');
+const logger  = require('../utils/logger');
+const cookieParser = require('cookie-parser');
+const fs = require('fs/promises');
+const path = require('path');
+
+const uploadsRoot = path.resolve(__dirname, '..', 'uploads');
+
+function resolveCvPath(cvUrl) {
+    if (!cvUrl) return null;
+    const relativePath = cvUrl.startsWith('/') ? cvUrl.slice(1) : cvUrl;
+    const absolutePath = path.resolve(__dirname, '..', relativePath);
+    if (!absolutePath.startsWith(uploadsRoot + path.sep) && absolutePath !== uploadsRoot) {
+        return null;
+    }
+    return absolutePath;
+}
 
 // GET /api/dosya/cv/:basvuruId?type=basvuru&token=... — CV'yi indir
 router.get('/cv/:basvuruId', async (req, res, next) => {
     try {
         const basvuruId = req.params.basvuruId;
-        const { type, token } = req.query;
+        const { type } = req.query;
 
-        // Token doğrula
+        // Accept token passed as query (legacy) OR cookie 'token' OR Authorization header
+        let token = req.query.token || (req.cookies && req.cookies.token) || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null);
         let kullanici = null;
-        if (token) {
-            try {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                const User = require('../models/User');
-                kullanici = await User.findById(decoded.id).select('-password');
-            } catch (err) {
-                console.error('Token doğrulama hatası:', err.message);
-                return res.status(401).json({ basarili: false, mesaj: 'Geçersiz token.' });
-            }
-        }
-
-        if (!kullanici) {
-            return res.status(401).json({ basarili: false, mesaj: 'Oturum bulunamadı. Lütfen giriş yapın.' });
+        if (!token) return res.status(401).json({ basarili: false, mesaj: 'Oturum bulunamadı. Lütfen giriş yapın.' });
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const User = require('../models/User');
+            kullanici = await User.findById(decoded.id).select('-password');
+        } catch (err) {
+            logger.warn('CV indirme: geçersiz token', { error: err.message });
+            return res.status(401).json({ basarili: false, mesaj: 'Geçersiz token.' });
         }
 
         if (type === 'basvuru') {
-            // Başvuru tarafından CV'yi indir
             const basvuru = await Basvuru.findById(basvuruId).populate('isveren', '_id');
-            if (!basvuru || !basvuru.cvBase64) {
+            if (!basvuru) {
                 return res.status(404).json({ basarili: false, mesaj: 'CV bulunamadı.' });
             }
 
-            console.log('Basvuru isveren:', basvuru.isveren._id, 'Kullanici:', kullanici._id);
-
-            // İşveren kontrolü - sadece ilgili işveren CV indirebilir
+            // Sadece ilgili işveren CV'yi indirebilir
             const isverenMatch = basvuru.isveren._id.toString() === kullanici._id.toString();
-            const isAdmin = kullanici.rol && kullanici.rol.includes('admin');
-            
-            if (!isverenMatch && !isAdmin) {
+            if (!isverenMatch) {
                 return res.status(403).json({ basarili: false, mesaj: 'Yetkiniz yok.' });
             }
 
-            // Base64'ten buffer'a çevir
-            const base64Data = basvuru.cvBase64.split(',')[1] || basvuru.cvBase64;
-            const binaryData = Buffer.from(base64Data, 'base64');
+            const cvPath = resolveCvPath(basvuru.cvUrl);
+            if (!cvPath) {
+                return res.status(404).json({ basarili: false, mesaj: 'CV bulunamadı.' });
+            }
 
-            // Headers ayarla
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename="cv_${basvuruId}.pdf"`);
-            res.send(binaryData);
+            try {
+                await fs.access(cvPath);
+            } catch {
+                return res.status(404).json({ basarili: false, mesaj: 'CV dosyası bulunamadı.' });
+            }
+
+            return res.download(cvPath, `cv_${basvuruId}.pdf`);
         }
     } catch (err) {
-        console.error('CV indirme hatası:', err);
+        logger.error('CV indirme hatası:', { error: err.message });
         next(err);
     }
 });

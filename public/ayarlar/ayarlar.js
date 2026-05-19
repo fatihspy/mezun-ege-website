@@ -1,7 +1,12 @@
 // Auth kontrolü
-(function() {
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = '../giris_ekrani/index.html'; }
+(async function() {
+    try {
+        const res = await fetch((typeof CONFIG !== 'undefined' ? CONFIG.AUTH_URL : 'http://localhost:3000/api/auth') + '/ben', { credentials: 'include' });
+        const veri = await res.json();
+        if (!veri.basarili) { window.location.href = '../giris_ekrani/index.html'; }
+    } catch(e) {
+        // ağ hatası durumunda yönlendirme yapma
+    }
 })();
 
 // ── Nav Avatar ─────────────────────────────────────────
@@ -241,16 +246,11 @@ async function sifreDegistir() {
     btn.textContent = '⏳ Güncelleniyor...';
 
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('Token bulunamadı');
-        }
-
         const response = await fetch(`${API_URL}/change-password`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ oldPassword, newPassword })
         });
