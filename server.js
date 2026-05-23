@@ -1,3 +1,5 @@
+process.on('uncaughtException', (err) => { console.error('HATA:', err.message, err.stack); process.exit(1); });
+process.on('unhandledRejection', (r) => { console.error('REJECTION:', r); process.exit(1); });
 require('dotenv').config();
 
 // Hata ayıklama — tüm yakalanmamış hataları logla
@@ -160,3 +162,4 @@ mongoose.connect(process.env.MONGODB_URI, {
     logger.error('❌ MongoDB bağlantı hatası:', err.message);
     process.exit(1);
   });
+
