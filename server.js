@@ -1,4 +1,15 @@
 require('dotenv').config();
+
+// Hata ayıklama — tüm yakalanmamış hataları logla
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+  process.exit(1);
+});
 const express    = require('express');
 const mongoose   = require('mongoose');
 const cors       = require('cors');
@@ -10,12 +21,9 @@ const logger     = require('./utils/logger');
 // ── Environment Validation ─────────────────────────────
 const requiredEnvVars = [
   'MONGODB_URI',
-  'JWT_SECRET',
-  'MAIL_HOST',
-  'MAIL_PORT',
-  'MAIL_USER',
-  'MAIL_PASS'
+  'JWT_SECRET'
 ];
+// Mail değişkenleri opsiyonel — eksikse mail özellikleri çalışmaz ama sunucu başlar
 
 const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 if (missingVars.length > 0) {
@@ -131,19 +139,17 @@ mongoose.connect(process.env.MONGODB_URI, {
     logger.info(`📦 MongoDB bağlantısı başarılı`);
     logger.info(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
 
-    // Validate mailer before starting server in production
-    try {
-      const mailer = require('./utils/mailer');
-      await mailer.verifyMailer();
-      logger.info('SMTP konfigürasyonu doğrulandı.');
-    } catch (err) {
-      logger.error('SMTP doğrulama hatası:', err && err.message ? err.message : err);
-      if (process.env.NODE_ENV === 'production') {
-        logger.error('Production ortamında SMTP doğrulama başarısız, sunucu başlatılmıyor.');
-        process.exit(1);
-      } else {
-        logger.warn('SMTP doğrulama başarısız — development ortamında devam ediliyor.');
+    // Mail doğrulama — hata olursa sunucuyu durdurma
+    if (process.env.MAIL_USER && process.env.MAIL_PASS) {
+      try {
+        const mailer = require('./utils/mailer');
+        await mailer.verifyMailer();
+        logger.info('SMTP konfigürasyonu doğrulandı.');
+      } catch (err) {
+        logger.warn('SMTP doğrulama başarısız — mail özellikleri çalışmayabilir:', err && err.message ? err.message : err);
       }
+    } else {
+      logger.warn('MAIL_USER/MAIL_PASS tanımlı değil — mail özellikleri devre dışı.');
     }
 
     app.listen(process.env.PORT || 3000, () => {
