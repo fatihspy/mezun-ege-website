@@ -97,15 +97,11 @@ router.post('/kayit', girisLimiter, async (req, res, next) => {
             sonGiris: new Date()
         });
 
-        // Email doğrulama kodu gönder
-        let emailSent = true;
-        try {
-            await emailVerificationCodeGonder(emailTemiz, verificationCode);
-        } catch (emailErr) {
-            emailSent = false;
+        // Email doğrulama kodunu arka planda gönder (kullanıcıyı beklettirme)
+        const emailSent = true;
+        emailVerificationCodeGonder(emailTemiz, verificationCode).catch(emailErr => {
             logger.error('Kayıt email gönderilemedi:', { email: emailTemiz, error: emailErr.message });
-            // Email hatası olsa bile devam et - frontend kullanıcıya bilgi gösterebilir
-        }
+        });
 
         // Token oluştur (limited süreli, email doğrulama gerekli)
         const token = tokenOlustur(yeniKullanici._id);
@@ -228,7 +224,7 @@ router.post('/sifre-kodu-gonder', girisLimiter, async (req, res, next) => {
         let emailSent = true;
         try {
             const { sifreBelirlemeKoduGonder } = require('../utils/mailer');
-            await sifreBelirlemeKoduGonder(emailTemiz, kod);
+            sifreBelirlemeKoduGonder(emailTemiz, kod).catch(e => logger.error('Mail gönderilemedi:', e.message));
             logger.info('Şifre belirleme kodu gönderildi:', { email: emailTemiz });
         } catch (e) {
             emailSent = false;
@@ -394,7 +390,7 @@ router.post('/resend-verification-code', authMiddleware, async (req, res, next) 
         // Email gönder
         let emailSent = true;
         try {
-            await emailVerificationCodeGonder(kullanici.email, verificationCode);
+            emailVerificationCodeGonder(kullanici.email, verificationCode).catch(e => logger.error('Mail gönderilemedi:', e.message));
         } catch (emailErr) {
             emailSent = false;
             logger.error('Doğrulama kodu yeniden gönderilemedi:', { email: kullanici.email, error: emailErr.message });
@@ -442,7 +438,7 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
         // Email gönder
         let emailSent = true;
         try {
-            await passwordResetCodeGonder(emailTemiz, resetCode);
+            passwordResetCodeGonder(emailTemiz, resetCode).catch(e => logger.error('Mail gönderilemedi:', e.message));
             logger.info('Şifre sıfırlama kodu gönderildi:', { email: emailTemiz });
         } catch (emailErr) {
             emailSent = false;
