@@ -139,16 +139,7 @@ mongoose.connect(process.env.MONGODB_URI, {
     logger.info(`📦 MongoDB bağlantısı başarılı`);
     logger.info(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
 
-    // Mail doğrulama — hata olursa devam et
-    if (process.env.MAIL_USER && process.env.MAIL_PASS) {
-      try {
-        const mailer = require('./utils/mailer');
-        await mailer.verifyMailer();
-        logger.info('SMTP konfigürasyonu doğrulandı.');
-      } catch (err) {
-        logger.warn('SMTP doğrulama başarısız:', err && err.message ? err.message : err);
-      }
-    }
+    // SMTP doğrulama atlandı — mail gönderimi arka planda çalışır
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => {
