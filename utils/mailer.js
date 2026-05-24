@@ -1,75 +1,31 @@
-const logger = require('./logger');
+const nodemailer = require('nodemailer');
+const logger     = require('./logger');
 
-// Resend API üzerinden mail gönder
-async function sendMail({ to, subject, html }) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-        logger.warn('RESEND_API_KEY tanımlı değil — mail gönderilmedi.');
-        return;
+const transporter = nodemailer.createTransport({
+    host:   process.env.MAIL_HOST,
+    port:   parseInt(process.env.MAIL_PORT),
+    secure: false,
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
     }
-
-    const from = process.env.MAIL_FROM || 'Egemyo Mezun <onboarding@resend.dev>';
-
-    const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ from, to, subject, html })
-    });
-
-    if (!res.ok) {
-        const err = await res.text();
-        throw new Error(`Resend API hatası: ${res.status} — ${err}`);
-    }
-
-    const data = await res.json();
-    logger.info('Mail gönderildi:', { to, id: data.id });
-    return data;
-}
+});
 
 function verifyMailer() {
-    if (!process.env.RESEND_API_KEY) return Promise.reject(new Error('RESEND_API_KEY eksik'));
-    return Promise.resolve(true);
-}
-
-async function dogrulamaKoduGonder(email, kod) {
-    await sendMail({
-        to: email,
-        subject: 'Egemyo Mezun — Giriş Doğrulama Kodu',
-        html: mailSablonu('Giriş Doğrulama Kodu', '#0077b5', kod, '10 dakika',
-            'Sisteme giriş yapmak için aşağıdaki doğrulama kodunu kullanın.')
+    return new Promise((resolve, reject) => {
+        transporter.verify((err, success) => {
+            if (err) return reject(err);
+            resolve(success);
+        });
     });
 }
 
-async function sifreBelirlemeKoduGonder(email, kod) {
-    await sendMail({
-        to: email,
-        subject: 'Egemyo Mezun — Şifre Belirleme Kodu',
-        html: mailSablonu('🔐 Şifre Belirleme Kodu', '#00a652', kod, '15 dakika',
-            'Hesabınız için şifre belirlemek üzere aşağıdaki doğrulama kodunu kullanın.')
+async function sendMail({ to, subject, html }) {
+    await transporter.sendMail({
+        from: process.env.MAIL_FROM || 'Egemyo Mezun <noreply@egemyo.com>',
+        to, subject, html
     });
-}
-
-async function emailVerificationCodeGonder(email, kod) {
-    await sendMail({
-        to: email,
-        subject: 'Egemyo Mezun — Email Doğrulama Kodu',
-        html: mailSablonu('✉️ Email Doğrulama Kodu', '#0077b5', kod, '10 dakika',
-            'Kayıt işlemini tamamlamak için aşağıdaki 6 haneli doğrulama kodunu kullanın.')
-    });
-}
-
-async function passwordResetCodeGonder(email, kod) {
-    logger.info('Şifre sıfırlama maili gönderiliyor:', { email });
-    await sendMail({
-        to: email,
-        subject: 'Egemyo Mezun — Şifre Sıfırlama Kodu',
-        html: mailSablonu('🔐 Şifre Sıfırlama Kodu', '#ff6b6b', kod, '15 dakika',
-            'Şifrenizi sıfırlamak için aşağıdaki 6 haneli kodu kullanın.')
-    });
-    logger.info('Şifre sıfırlama maili gönderildi:', { email });
+    logger.info('Mail gönderildi:', { to });
 }
 
 function mailSablonu(baslik, renk, kod, sure, aciklama) {
@@ -88,13 +44,35 @@ function mailSablonu(baslik, renk, kod, sure, aciklama) {
                 </div>
             </div>
             <p style="color:#a0aec0;font-size:13px;margin-bottom:0;">
-                Bu maili siz istemediyseniz, güvende olduğunuzu bilmenizi isteriz — kodu kimseyle paylaşmayın.
+                Bu maili siz istemediyseniz kodu kimseyle paylaşmayın.
             </p>
         </div>
         <p style="text-align:center;color:#a0aec0;font-size:12px;margin-top:20px;">
             © ${new Date().getFullYear()} Egemyo Mezun Sistemi
         </p>
     </div>`;
+}
+
+async function dogrulamaKoduGonder(email, kod) {
+    await sendMail({ to: email, subject: 'Egemyo Mezun — Giriş Doğrulama Kodu',
+        html: mailSablonu('Giriş Doğrulama Kodu', '#0077b5', kod, '10 dakika', 'Sisteme giriş yapmak için aşağıdaki doğrulama kodunu kullanın.') });
+}
+
+async function sifreBelirlemeKoduGonder(email, kod) {
+    await sendMail({ to: email, subject: 'Egemyo Mezun — Şifre Belirleme Kodu',
+        html: mailSablonu('🔐 Şifre Belirleme Kodu', '#00a652', kod, '15 dakika', 'Hesabınız için şifre belirlemek üzere aşağıdaki doğrulama kodunu kullanın.') });
+}
+
+async function emailVerificationCodeGonder(email, kod) {
+    await sendMail({ to: email, subject: 'Egemyo Mezun — Email Doğrulama Kodu',
+        html: mailSablonu('✉️ Email Doğrulama Kodu', '#0077b5', kod, '10 dakika', 'Kayıt işlemini tamamlamak için aşağıdaki 6 haneli doğrulama kodunu kullanın.') });
+}
+
+async function passwordResetCodeGonder(email, kod) {
+    logger.info('Şifre sıfırlama maili gönderiliyor:', { email });
+    await sendMail({ to: email, subject: 'Egemyo Mezun — Şifre Sıfırlama Kodu',
+        html: mailSablonu('🔐 Şifre Sıfırlama Kodu', '#ff6b6b', kod, '15 dakika', 'Şifrenizi sıfırlamak için aşağıdaki 6 haneli kodu kullanın.') });
+    logger.info('Şifre sıfırlama maili gönderildi:', { email });
 }
 
 module.exports = { dogrulamaKoduGonder, sifreBelirlemeKoduGonder, emailVerificationCodeGonder, passwordResetCodeGonder, verifyMailer };
