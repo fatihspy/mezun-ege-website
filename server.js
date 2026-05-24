@@ -1,5 +1,3 @@
-process.on('uncaughtException', (err) => { console.error('HATA:', err.message, err.stack); process.exit(1); });
-process.on('unhandledRejection', (r) => { console.error('REJECTION:', r); process.exit(1); });
 require('dotenv').config();
 
 // Hata ayıklama — tüm yakalanmamış hataları logla
@@ -141,25 +139,26 @@ mongoose.connect(process.env.MONGODB_URI, {
     logger.info(`📦 MongoDB bağlantısı başarılı`);
     logger.info(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
 
-    // Mail doğrulama — hata olursa sunucuyu durdurma
+    // Mail doğrulama — 5 saniye timeout ile, hata olursa devam et
     if (process.env.MAIL_USER && process.env.MAIL_PASS) {
       try {
         const mailer = require('./utils/mailer');
-        await mailer.verifyMailer();
+        await Promise.race([
+          mailer.verifyMailer(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP timeout')), 5000))
+        ]);
         logger.info('SMTP konfigürasyonu doğrulandı.');
       } catch (err) {
-        logger.warn('SMTP doğrulama başarısız — mail özellikleri çalışmayabilir:', err && err.message ? err.message : err);
+        logger.warn('SMTP doğrulama atlandı:', err && err.message ? err.message : err);
       }
-    } else {
-      logger.warn('MAIL_USER/MAIL_PASS tanımlı değil — mail özellikleri devre dışı.');
     }
 
-    app.listen(process.env.PORT || 3000, () => {
-      logger.info(`🚀 Sunucu çalışıyor: http://localhost:${process.env.PORT || 3000}`);
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, '0.0.0.0', () => {
+      logger.info(`🚀 Sunucu çalışıyor: http://0.0.0.0:${PORT}`);
     });
   })
   .catch(err => {
     logger.error('❌ MongoDB bağlantı hatası:', err.message);
     process.exit(1);
   });
-
