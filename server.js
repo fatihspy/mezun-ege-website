@@ -139,17 +139,14 @@ mongoose.connect(process.env.MONGODB_URI, {
     logger.info(`📦 MongoDB bağlantısı başarılı`);
     logger.info(`🌍 Ortam: ${process.env.NODE_ENV || 'development'}`);
 
-    // Mail doğrulama — 5 saniye timeout ile, hata olursa devam et
+    // Mail doğrulama — hata olursa devam et
     if (process.env.MAIL_USER && process.env.MAIL_PASS) {
       try {
         const mailer = require('./utils/mailer');
-        await Promise.race([
-          mailer.verifyMailer(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP timeout')), 5000))
-        ]);
+        await mailer.verifyMailer();
         logger.info('SMTP konfigürasyonu doğrulandı.');
       } catch (err) {
-        logger.warn('SMTP doğrulama atlandı:', err && err.message ? err.message : err);
+        logger.warn('SMTP doğrulama başarısız:', err && err.message ? err.message : err);
       }
     }
 
