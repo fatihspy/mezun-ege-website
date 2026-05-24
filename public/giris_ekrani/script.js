@@ -140,7 +140,7 @@ async function mailGonder() {
 
     try {
         const controller = new AbortController();
-        const timeoutId  = setTimeout(() => controller.abort(), 8000);
+        const timeoutId  = setTimeout(() => controller.abort(), 30000);
 
         // Frontend'de validation - gerçek API çağrısı yapma, sadece formata devam et
         girisMaili = mail;
@@ -197,7 +197,7 @@ async function girisYap() {
 
     try {
         const controller = new AbortController();
-        const timeoutId  = setTimeout(() => controller.abort(), 8000);
+        const timeoutId  = setTimeout(() => controller.abort(), 30000);
 
         const yanit = await fetch(`${API_URL}/giris`, {
             method: 'POST',
@@ -308,7 +308,7 @@ async function sifreBelirleFonksiyon() {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const yanit = await fetch(`${API_URL}/sifre-belirle`, {
             method: 'POST',
@@ -372,7 +372,7 @@ window.sifreKoduGonder = async function() {
     
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const yanit = await fetch(`${API_URL}/sifre-kodu-gonder`, {
             method: 'POST',
@@ -424,7 +424,7 @@ async function sifreKoduDogrula() {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const yanit = await fetch(`${API_URL}/sifre-kodu-dogrula`, {
             method: 'POST',
@@ -554,7 +554,7 @@ async function kayitYap() {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const yanit = await fetch(`${API_URL}/kayit`, {
             method: 'POST',
