@@ -40,6 +40,9 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 
 const app = express();
 
+// Railway / proxy arkasında çalışıyoruz
+app.set('trust proxy', 1);
+
 // ── Güvenlik başlıkları ───────────────────────────────
 if (process.env.NODE_ENV === 'production') {
   app.use(helmet({
