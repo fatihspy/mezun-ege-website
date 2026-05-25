@@ -224,7 +224,7 @@ router.post('/sifre-kodu-gonder', girisLimiter, async (req, res, next) => {
         let emailSent = true;
         try {
             const { sifreBelirlemeKoduGonder } = require('../utils/mailer');
-            sifreBelirlemeKoduGonder(emailTemiz, kod).catch(e => logger.error('Mail gönderilemedi:', e.message));
+            sifreBelirlemeKoduGonder(emailTemiz, kod).catch(e => logger.error('Mail gönderilemedi:', e && (e.message || e.toString()) || 'Bilinmeyen hata'));
             logger.info('Şifre belirleme kodu gönderildi:', { email: emailTemiz });
         } catch (e) {
             emailSent = false;
@@ -390,7 +390,7 @@ router.post('/resend-verification-code', authMiddleware, async (req, res, next) 
         // Email gönder
         let emailSent = true;
         try {
-            emailVerificationCodeGonder(kullanici.email, verificationCode).catch(e => logger.error('Mail gönderilemedi:', e.message));
+            emailVerificationCodeGonder(kullanici.email, verificationCode).catch(e => logger.error('Mail gönderilemedi:', e && (e.message || e.toString()) || 'Bilinmeyen hata'));
         } catch (emailErr) {
             emailSent = false;
             logger.error('Doğrulama kodu yeniden gönderilemedi:', { email: kullanici.email, error: emailErr.message });
@@ -438,7 +438,7 @@ router.post('/forgot-password', girisLimiter, async (req, res, next) => {
         // Email gönder
         let emailSent = true;
         try {
-            passwordResetCodeGonder(emailTemiz, resetCode).catch(e => logger.error('Mail gönderilemedi:', e.message));
+            passwordResetCodeGonder(emailTemiz, resetCode).catch(e => logger.error('Mail gönderilemedi:', e && (e.message || e.toString()) || 'Bilinmeyen hata'));
             logger.info('Şifre sıfırlama kodu gönderildi:', { email: emailTemiz });
         } catch (emailErr) {
             emailSent = false;

@@ -21,11 +21,24 @@ function verifyMailer() {
 }
 
 async function sendMail({ to, subject, html }) {
-    await transporter.sendMail({
-        from: process.env.MAIL_FROM || 'Egemyo Mezun <noreply@egemyo.com>',
-        to, subject, html
-    });
-    logger.info('Mail gönderildi:', { to });
+    try {
+        const info = await transporter.sendMail({
+            from: process.env.MAIL_FROM || 'Egemyo Mezun <noreply@egemyo.com>',
+            to, subject, html
+        });
+        logger.info('Mail gönderildi:', { to, messageId: info.messageId });
+        return info;
+    } catch (err) {
+        logger.error('SMTP sendMail hatası:', {
+            to,
+            message: err.message,
+            code: err.code,
+            command: err.command,
+            responseCode: err.responseCode,
+            response: err.response
+        });
+        throw err;
+    }
 }
 
 function mailSablonu(baslik, renk, kod, sure, aciklama) {
