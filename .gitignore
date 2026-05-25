@@ -2,17 +2,25 @@
 .env
 .env.local
 .env.production
+.env.*
 
 # Bağımlılıklar
 node_modules/
 
 # Log dosyaları
 *.log
-npm-debug.log*
 logs/
+mail-debug.log
 
-# Test & geliştirme araçları
-seed.js
+# Upload edilen dosyalar
+uploads/
+
+# CV token PDF'leri
+*.pdf
+
+# Test görseller
+public/image.png
+public/image copy.png
 
 # OS dosyaları
 .DS_Store
@@ -21,3 +29,8 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Scripts (admin araçları, production'a gitmesin)
+scripts/
+
+# Railway

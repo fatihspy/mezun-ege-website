@@ -56,19 +56,16 @@ const izinliOriginler = process.env.ALLOWED_ORIGIN
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Eğer ALLOWED_ORIGIN='*' ise yalnızca development ortamında izin ver
-    if (process.env.ALLOWED_ORIGIN === '*') {
-      if (process.env.NODE_ENV === 'production') {
-        return callback(new Error('CORS wildcard (*) production ortamında izinli değil. Lütfen ALLOWED_ORIGIN ayarını güncelleyin.'));
-      }
-      return callback(null, true);
-    }
+    // Wildcard — tüm originlere izin ver
+    if (process.env.ALLOWED_ORIGIN === '*') return callback(null, true);
 
-    // Origin yoksa (server-side veya curl gibi) izin ver
+    // Origin yoksa (server-side, curl, Postman) izin ver
     if (!origin) return callback(null, true);
 
-    // Normal listeleme
-    if (izinliOriginler.includes(origin)) return callback(null, true);
+    // Aynı sunucudan gelen istekler (Railway self-request)
+    if (izinliOriginler.some(o => origin === o || origin === o.replace(/\/+$/, ''))) {
+      return callback(null, true);
+    }
 
     callback(new Error(`CORS: ${origin} adresine izin verilmiyor.`));
   },
