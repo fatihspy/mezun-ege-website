@@ -100,7 +100,7 @@ router.post('/kayit', girisLimiter, async (req, res, next) => {
         // Email doğrulama kodunu arka planda gönder (kullanıcıyı beklettirme)
         const emailSent = true;
         emailVerificationCodeGonder(emailTemiz, verificationCode).catch(emailErr => {
-            logger.error('Kayıt email gönderilemedi:', { email: emailTemiz, error: emailErr.message });
+            logger.error('Kayıt email gönderilemedi:', emailErr?.message || emailErr?.toString() || JSON.stringify(emailErr));
         });
 
         // Token oluştur (limited süreli, email doğrulama gerekli)

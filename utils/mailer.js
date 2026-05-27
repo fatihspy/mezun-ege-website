@@ -3,6 +3,7 @@ const logger = require('./logger');
 // Brevo HTTP API ile mail gönder (SMTP yok, port sorunu yok)
 async function sendMail({ to, subject, html }) {
     const apiKey = process.env.BREVO_API_KEY || process.env.MAIL_PASS;
+    logger.info('Mail deneniyor:', { to, apiKeyVar: process.env.BREVO_API_KEY ? 'SET' : 'MISSING' });
     if (!apiKey) {
         logger.warn('BREVO_API_KEY tanımlı değil — mail gönderilmedi.');
         return;
