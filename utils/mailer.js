@@ -1,49 +1,45 @@
-const nodemailer = require('nodemailer');
-const logger     = require('./logger');
+const logger = require('./logger');
 
-const port = parseInt(process.env.MAIL_PORT) || 587;
-const transporter = nodemailer.createTransport({
-    host:   process.env.MAIL_HOST,
-    port:   port,
-    secure: port === 465,
-    family: 4,
-    auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-});
+// Brevo HTTP API ile mail gönder (SMTP yok, port sorunu yok)
+async function sendMail({ to, subject, html }) {
+    const apiKey = process.env.BREVO_API_KEY || process.env.MAIL_PASS;
+    if (!apiKey) {
+        logger.warn('BREVO_API_KEY tanımlı değil — mail gönderilmedi.');
+        return;
+    }
 
-function verifyMailer() {
-    return new Promise((resolve, reject) => {
-        transporter.verify((err, success) => {
-            if (err) return reject(err);
-            resolve(success);
-        });
+    const from = process.env.MAIL_FROM_NAME || 'Egemyo Mezun';
+    const fromEmail = process.env.MAIL_FROM_EMAIL || 'fatihspyy@gmail.com';
+
+    const body = {
+        sender: { name: from, email: fromEmail },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html
+    };
+
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+            'accept': 'application/json',
+            'api-key': apiKey,
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify(body)
     });
+
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Brevo API hatası: ${res.status} — ${err}`);
+    }
+
+    const data = await res.json();
+    logger.info('Mail gönderildi:', { to, messageId: data.messageId });
+    return data;
 }
 
-async function sendMail({ to, subject, html }) {
-    try {
-        const info = await transporter.sendMail({
-            from: process.env.MAIL_FROM || 'Egemyo Mezun <noreply@egemyo.com>',
-            to, subject, html
-        });
-        logger.info('Mail gönderildi:', { to, messageId: info.messageId });
-        return info;
-    } catch (err) {
-        logger.error('SMTP sendMail hatası:', {
-            to,
-            message: err.message,
-            code: err.code,
-            command: err.command,
-            responseCode: err.responseCode,
-            response: err.response
-        });
-        throw err;
-    }
+function verifyMailer() {
+    return Promise.resolve(true);
 }
 
 function mailSablonu(baslik, renk, kod, sure, aciklama) {
@@ -87,10 +83,8 @@ async function emailVerificationCodeGonder(email, kod) {
 }
 
 async function passwordResetCodeGonder(email, kod) {
-    logger.info('Şifre sıfırlama maili gönderiliyor:', { email });
     await sendMail({ to: email, subject: 'Egemyo Mezun — Şifre Sıfırlama Kodu',
         html: mailSablonu('🔐 Şifre Sıfırlama Kodu', '#ff6b6b', kod, '15 dakika', 'Şifrenizi sıfırlamak için aşağıdaki 6 haneli kodu kullanın.') });
-    logger.info('Şifre sıfırlama maili gönderildi:', { email });
 }
 
 module.exports = { dogrulamaKoduGonder, sifreBelirlemeKoduGonder, emailVerificationCodeGonder, passwordResetCodeGonder, verifyMailer };
