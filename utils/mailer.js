@@ -1,14 +1,19 @@
 const nodemailer = require('nodemailer');
 const logger     = require('./logger');
 
+const port = parseInt(process.env.MAIL_PORT) || 587;
 const transporter = nodemailer.createTransport({
     host:   process.env.MAIL_HOST,
-    port:   parseInt(process.env.MAIL_PORT),
-    secure: false,
+    port:   port,
+    secure: port === 465,
+    family: 4,
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS
-    }
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
 });
 
 function verifyMailer() {
