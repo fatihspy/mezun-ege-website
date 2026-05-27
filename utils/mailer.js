@@ -9,11 +9,14 @@ async function sendMail({ to, subject, html }) {
         return;
     }
 
-    const from = process.env.MAIL_FROM_NAME || 'Egemyo Mezun';
-    const fromEmail = process.env.MAIL_FROM_EMAIL || 'fatihspyy@gmail.com';
+    // MAIL_FROM formatı: "İsim <email@domain.com>" veya sadece "email@domain.com"
+    const mailFrom = process.env.MAIL_FROM || 'fatihspyy@10893309.brevosend.com';
+    const fromMatch = mailFrom.match(/^(.+?)\s*<(.+?)>$/);
+    const fromName = fromMatch ? fromMatch[1].trim() : 'Egemyo Mezun';
+    const fromEmail = fromMatch ? fromMatch[2].trim() : mailFrom.trim();
 
     const body = {
-        sender: { name: from, email: fromEmail },
+        sender: { name: fromName, email: fromEmail },
         to: [{ email: to }],
         subject,
         htmlContent: html
