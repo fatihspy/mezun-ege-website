@@ -1,6 +1,7 @@
 // Auth + nav
 sayfaAuthKontrol(true);
 document.addEventListener('DOMContentLoaded', () => { navBaslat(); logoutBaslat(); });
+    telefonMaskUygula('fIletisimTelefon');
 
 // ── Veri ─────────────────────────────────────────────
 const kullanici  = JSON.parse(localStorage.getItem('kullanici') || '{}');

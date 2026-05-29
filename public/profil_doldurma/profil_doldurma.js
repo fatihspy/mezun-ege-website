@@ -1,3 +1,5 @@
+telefonMaskUygula('s4Telefon');
+
 // Auth kontrolü — token yoksa giriş sayfasına, profil tamansa dashboard'a
 (async function() {
     try {

@@ -68,6 +68,7 @@ document.getElementById('ayarIsim').value    = kullanici.isim    || profilData.i
 document.getElementById('ayarSoyisim').value = kullanici.soyisim || profilData.soyisim || '';
 document.getElementById('ayarEmail').value   = kullanici.email   || '';
 document.getElementById('ayarTelefon').value = profilData.telefon || '';
+telefonMaskUygula('ayarTelefon');
 document.getElementById('ayarHakkimda').value= profilData.hakkimda || '';
 
 // Hesap kaydet

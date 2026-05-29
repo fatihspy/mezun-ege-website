@@ -1,3 +1,5 @@
+telefonMaskUygula('s2Telefon');
+
 const API_URL  = (typeof CONFIG !== 'undefined') ? CONFIG.AUTH_URL  : 'http://localhost:3000/api/auth';
 const PROFIL_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL + '/profil' : 'http://localhost:3000/api/profil';
 

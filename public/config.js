@@ -188,69 +188,6 @@ window.bildirimAc = function(id) {
 // Sayfa yüklenince zili güncelle
 document.addEventListener('DOMContentLoaded', () => { bildirimZiliniGuncelle(); bildirimleriYukle(); });
 
-// ── Gerçek Zamanlı Polling ────────────────────────────
-// Her 10 saniyede bildirim sayısını kontrol eder,
-// aktif mesaj sayfasındaysa yeni mesajları da çeker.
-
-(function() {
-    let _sonKontrol = new Date().toISOString();
-    let _pollingTimer = null;
-
-    async function _pollingTur() {
-        try {
-            // 1. Okunmamış bildirim sayısını çek
-            const res = await fetch(
-                CONFIG.API_URL + '/bildirimler/okunmamis-sayisi?since=' + encodeURIComponent(_sonKontrol),
-                { credentials: 'include' }
-            );
-            if (!res.ok) return;
-            const data = await res.json();
-            _sonKontrol = new Date().toISOString();
-
-            if (data.sayi > 0) {
-                // Çanı güncelle
-                const badge = document.querySelector('.zil-badge');
-                if (badge) {
-                    const mevcut = parseInt(badge.textContent || '0', 10);
-                    badge.textContent = mevcut + data.sayi;
-                    badge.style.display = 'flex';
-                }
-                // localStorage'daki bildirimleri sunucudan yenile
-                if (typeof bildirimleriYukle === 'function') bildirimleriYukle();
-            }
-
-            // 2. Mesaj sayfasındaysak aktif sohbeti güncelle
-            if (typeof aktifKarsiKullaniciId !== 'undefined' && aktifKarsiKullaniciId) {
-                if (typeof mesajlarıYukle === 'function') mesajlarıYukle();
-            }
-            // İşveren sayfasındaysak
-            if (typeof isvAktifKarsiId !== 'undefined' && isvAktifKarsiId) {
-                if (typeof isvKonusmaAc === 'function') isvKonusmaAc(isvAktifKarsiId, false);
-            }
-        } catch (e) { /* sessizce geç */ }
-    }
-
-    function pollingBaslat() {
-        if (_pollingTimer) return;
-        _pollingTimer = setInterval(_pollingTur, 10000); // 10 saniye
-    }
-
-    function pollingDurdur() {
-        clearInterval(_pollingTimer);
-        _pollingTimer = null;
-    }
-
-    // Sayfa görünür olduğunda çalış, arka planda duraksın
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) pollingDurdur();
-        else { pollingBaslat(); _pollingTur(); }
-    });
-
-    document.addEventListener('DOMContentLoaded', pollingBaslat);
-    window.pollingBaslat = pollingBaslat;
-    window.pollingDurdur = pollingDurdur;
-})();
-
 // ── Auth Kontrolü (Token + Backend doğrulama) ─────────
 // tokenOnly=true → sadece varlık kontrolü (hızlı), false → backend'e sorar (güvenli)
 async function sayfaAuthKontrol(tokenOnly = false) {
@@ -359,4 +296,25 @@ function logoutBaslat() {
         if (e.target === modal) modal.classList.remove('show');
         if (e.target === successModal) { window.location.href = girisSayfasi; }
     });
+}
+
+
+// ── Telefon Input Mask ────────────────────────────────
+function telefonMaskUygula(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.addEventListener('input', function(e) {
+        let val = this.value.replace(/\D/g, ''); // sadece rakamlar
+        if (val.startsWith('90')) val = val.slice(2);
+        if (val.startsWith('0')) val = val.slice(1);
+        val = val.slice(0, 10);
+        let fmt = '';
+        if (val.length > 0) fmt = '(' + val.slice(0, 3);
+        if (val.length >= 4) fmt += ') ' + val.slice(3, 6);
+        if (val.length >= 7) fmt += ' ' + val.slice(6, 8);
+        if (val.length >= 9) fmt += ' ' + val.slice(8, 10);
+        this.value = fmt;
+    });
+    // Kaydetmeden önce temiz değer almak için
+    el.getRawValue = () => el.value.replace(/\D/g, '');
 }

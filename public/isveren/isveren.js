@@ -14,6 +14,7 @@ const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://local
 })();
 
 document.addEventListener('DOMContentLoaded', () => { navBaslat(); });
+    telefonMaskUygula('hTelefon');
 
 // ── Kullanıcı & UI ────────────────────────────────────
 // cookie-based auth; no local token required
@@ -438,9 +439,9 @@ function isvKonusmaListesiRender(filtre = '') {
 
     liste.innerHTML = filtrelenmis.map(k => {
         const kisiAdi = tamAd(k.karsiKullanici);
-        const sonMesaj = k.sonMesaj || null;
-        const aktifCls = String(k.karsiKullanici._id) === String(isvAktifKarsiId) ? 'aktif' : '';
-        const onizleme = sonMesaj ? (String(sonMesaj.gonderen) === String(kullanici.id) ? 'Sen: ' : '') + sonMesaj.metin : '';
+        const sonMesaj = k.mesajlar.length ? k.mesajlar[k.mesajlar.length - 1] : null;
+        const aktifCls = k.karsiKullanici._id === isvAktifKarsiId ? 'aktif' : '';
+        const onizleme = sonMesaj ? (sonMesaj.gonderen._id === kullanici.id ? 'Sen: ' : '') + sonMesaj.metin : '';
 
         return `
             <div class="isv-konusma-item ${aktifCls}" onclick="isvKonusmaAc('${k.karsiKullanici._id}')">
@@ -456,8 +457,8 @@ document.getElementById('isvMesajAra').addEventListener('input', function() { is
 
 window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     isvAktifKarsiId = karsiId;
-    const konusma = tumKonusmalar.find(k => String(k.karsiKullanici._id) === String(karsiId));
-
+    const konusma = tumKonusmalar.find(k => k.karsiKullanici._id === karsiId);
+    
     document.getElementById('isvChatBos').style.display = 'none';
     document.getElementById('isvChatAktif').style.display = 'flex';
 
@@ -465,32 +466,22 @@ window.isvKonusmaAc = async function(karsiId, okunduGonder = true) {
     document.getElementById('isvChatBaslik').innerHTML = `<span>💬 ${escapeHtml(kisiAdi)}</span>`;
 
     const alan = document.getElementById('isvMesajlarAlan');
-    alan.innerHTML = '<div style="text-align:center;padding:32px;color:#a0aec0;font-size:13px;">Yükleniyor...</div>';
-
-    // Mesajları backend'den çek
-    try {
-        const res = await fetch(`${API_URL}/mesajlar/${karsiId}/mesajlar`, { credentials: 'include' });
-        const data = await res.json();
-        if (data.basarili && data.mesajlar && data.mesajlar.length) {
-            alan.innerHTML = data.mesajlar.map(m => `
-                <div class="isv-msg ${String(m.gonderen._id || m.gonderen) === String(kullanici.id) ? 'giden' : 'gelen'}">
-                    <div class="isv-msg-balon">${escapeHtml(m.metin)}</div>
-                    <div class="isv-msg-zaman">${saatFmt(m.tarih)}</div>
-                </div>
-            `).join('');
-        } else {
-            alan.innerHTML = '<div style="text-align:center;padding:32px;color:#a0aec0;font-size:13px;">Henüz mesaj yok. İlk mesajı gönderin!</div>';
-        }
-    } catch(e) {
-        alan.innerHTML = '<div style="text-align:center;padding:32px;color:#e53e3e;font-size:13px;">Mesajlar yüklenemedi.</div>';
+    if (!konusma || !konusma.mesajlar.length) {
+        alan.innerHTML = '<div style="text-align:center;padding:32px;color:#a0aec0;font-size:13px;">Henüz mesaj yok. İlk mesajı gönderin!</div>';
+    } else {
+        alan.innerHTML = konusma.mesajlar.map(m => `
+            <div class="isv-msg ${(m.gonderen._id || m.gonderen) === kullanici.id ? 'giden' : 'gelen'}">
+                <div class="isv-msg-balon">${escapeHtml(m.metin)}</div>
+                <div class="isv-msg-zaman">${saatFmt(m.tarih)}</div>
+            </div>
+        `).join('');
     }
-
     alan.scrollTop = alan.scrollHeight;
     isvKonusmaListesiRender(document.getElementById('isvMesajAra').value);
 
     // Okundu işaretle
     if (konusma && konusma.okunmadi > 0 && okunduGonder) {
-        konusma.okunmadi = 0;
+        konusma.okunmadi = 0; 
         try {
             await fetch(`${API_URL}/mesajlar/${karsiId}/okundu`, { method: 'PUT', credentials: 'include' });
         } catch(e) {}
