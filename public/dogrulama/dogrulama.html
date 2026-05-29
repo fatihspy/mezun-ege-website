@@ -67,7 +67,7 @@
 
             <div class="buttons">
                 <button type="submit" class="btn-verify">Doğrula</button>
-                <button type="button" class="btn-cancel" onclick="window.location.href='../giris_ekrani/index.html'">İptal</button>
+                <button type="button" class="btn-cancel" onclick="iptalEt()">İptal</button>
             </div>
         </form>
 
@@ -151,6 +151,15 @@
                 btn.innerHTML = 'Doğrula';
             }
         });
+
+        // İptal — oturumu kapat, localStorage temizle, giriş sayfasına dön
+        async function iptalEt() {
+            try {
+                await fetch(CONFIG.AUTH_URL + '/cikis', { method: 'POST', credentials: 'include' });
+            } catch(e) { /* hata olsa bile devam */ }
+            ['kullanici','email','token','beniHatirla','profilTamamlandi','profilDetay'].forEach(k => localStorage.removeItem(k));
+            window.location.href = '../giris_ekrani/index.html';
+        }
 
         let geriSayimId = null;
 
